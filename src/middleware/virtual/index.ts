@@ -1,5 +1,6 @@
 import { ComputePositionState, Middleware } from "../../types";
-import { getParentElements, getScrollParent } from "../../utils/dom";
+
+import { getScrollParent } from "../../utils/dom";
 
 export interface VirtualOptions {
   ancestorScroll?: boolean;
@@ -9,9 +10,8 @@ export interface VirtualOptions {
 }
 
 function getScrollParents(element: Element): Element[] {
-  const parents = getParentElements(element);
-  let current = element;
   const scrollParents: Element[] = [];
+  let current = element;
 
   while (current && current !== document.documentElement) {
     if (getScrollParent(current) !== document.documentElement) {
@@ -90,20 +90,4 @@ export function virtual(options: VirtualOptions = {}): Middleware {
       };
     },
   };
-}
-
-/**
- * Checks if an element is scrollable
- */
-function isScrollable(element: Element): boolean {
-  const style = getComputedStyle(element);
-  const overflow = style.overflow + style.overflowX + style.overflowY;
-  return /auto|scroll|overlay|hidden/.test(overflow);
-}
-
-/**
- * Checks if an element has fixed position
- */
-function isFixedPosition(element: Element): boolean {
-  return getComputedStyle(element).position === "fixed";
 }

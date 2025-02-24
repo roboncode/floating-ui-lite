@@ -20,7 +20,7 @@ describe("Components", () => {
       const button = document.createElement("button");
       container.appendChild(button);
 
-      const tooltip = new Tooltip(button, "Test tooltip", "top");
+      new Tooltip(button, "Test tooltip", "top");
 
       // Simulate mouseenter
       button.dispatchEvent(new MouseEvent("mouseenter"));
@@ -35,7 +35,7 @@ describe("Components", () => {
       const button = document.createElement("button");
       container.appendChild(button);
 
-      const tooltip = new Tooltip(button, "Test tooltip", "top");
+      new Tooltip(button, "Test tooltip", "top");
 
       // Show and hide tooltip
       button.dispatchEvent(new MouseEvent("mouseenter"));
@@ -74,7 +74,7 @@ describe("Components", () => {
       container.appendChild(button);
 
       const items = ["Item 1", "Item 2", "Item 3"];
-      const menu = new DropdownMenu(button, items, "bottom");
+      new DropdownMenu(button, items, "bottom");
 
       // Click button to show menu
       button.click();
@@ -96,7 +96,7 @@ describe("Components", () => {
       container.appendChild(button);
 
       const items = ["Item 1", "Item 2", "Item 3"];
-      const menu = new DropdownMenu(button, items, "bottom");
+      new DropdownMenu(button, items, "bottom");
 
       // Setup event listener
       const onSelect = vi.fn();
