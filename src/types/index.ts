@@ -82,10 +82,26 @@ export interface ComputePositionState {
   y: number;
   strategy: Strategy;
   placement: Placement;
-  elements: Elements;
+  elements: {
+    reference: Element;
+    floating: HTMLElement;
+    container?: HTMLElement;
+  };
   rects: {
     reference: Rect;
     floating: Rect;
   };
   middlewareData: Record<string, any>;
+}
+
+export interface FloatingOptions {
+  container?: HTMLElement;
+  strategy?: Strategy;
+}
+
+export interface ComputePositionOptions {
+  placement?: Placement;
+  strategy?: Strategy;
+  middleware?: Middleware[];
+  container?: HTMLElement;
 }

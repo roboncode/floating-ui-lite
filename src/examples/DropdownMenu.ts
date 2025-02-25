@@ -1,9 +1,17 @@
-import { Placement, computePosition, flip, offset, shift } from "../index";
+import {
+  FloatingOptions,
+  Placement,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "../index";
 
 export class DropdownMenu {
   private trigger: HTMLElement;
   private menu: HTMLElement;
   private placement: Placement;
+  private container: HTMLElement;
   isOpen: boolean = false;
   private cleanup: (() => void) | null = null;
   private animationFrame: number | null = null;
@@ -12,10 +20,12 @@ export class DropdownMenu {
   constructor(
     trigger: HTMLElement,
     menuItems: string[],
-    placement: Placement = "bottom-start"
+    placement: Placement = "bottom-start",
+    options: FloatingOptions = {}
   ) {
     this.trigger = trigger;
     this.placement = placement;
+    this.container = options.container || document.body;
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -106,19 +116,19 @@ export class DropdownMenu {
     }
   };
 
-  private updatePosition = () => {
+  private updatePosition = async () => {
     if (!this.isOpen) return;
 
-    computePosition(this.trigger, this.menu, {
+    const { x, y } = await computePosition(this.trigger, this.menu, {
       placement: this.placement,
+      strategy: "absolute",
+      container: this.container,
       middleware: [offset(6), flip(), shift({ padding: 5 })],
-    }).then(({ x, y }) => {
-      Object.assign(this.menu.style, {
-        left: `${x}px`,
-        top: `${y}px`,
-      });
+    });
 
-      this.animationFrame = requestAnimationFrame(this.updatePosition);
+    Object.assign(this.menu.style, {
+      left: `${x}px`,
+      top: `${y}px`,
     });
   };
 
@@ -126,10 +136,16 @@ export class DropdownMenu {
     if (this.isOpen) return;
 
     this.isOpen = true;
-    document.body.appendChild(this.menu);
-    this.menu.classList.add("show");
+    this.container.appendChild(this.menu);
 
-    // Add click outside listener immediately
+    // Update position before showing to prevent flash
+    this.updatePosition().then(() => {
+      requestAnimationFrame(() => {
+        this.menu.classList.add("show");
+      });
+    });
+
+    // Add click outside listener
     document.addEventListener("click", this.handleClickOutside);
 
     // Start update loop
@@ -156,21 +172,14 @@ export class DropdownMenu {
     // Remove click outside listener
     document.removeEventListener("click", this.handleClickOutside);
 
-    // Remove menu immediately in test environment
-    if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
+    // Remove menu after transition
+    const onTransitionEnd = () => {
       if (this.menu.parentNode) {
         this.menu.parentNode.removeChild(this.menu);
       }
-    } else {
-      // Remove menu after transition in production
-      const onTransitionEnd = () => {
-        if (this.menu.parentNode) {
-          this.menu.parentNode.removeChild(this.menu);
-        }
-        this.menu.removeEventListener("transitionend", onTransitionEnd);
-      };
-      this.menu.addEventListener("transitionend", onTransitionEnd);
-    }
+      this.menu.removeEventListener("transitionend", onTransitionEnd);
+    };
+    this.menu.addEventListener("transitionend", onTransitionEnd);
   }
 
   destroy() {
