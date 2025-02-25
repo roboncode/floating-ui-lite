@@ -43,12 +43,31 @@ function findScrollableParent(element: Element): HTMLElement | null {
   return null;
 }
 
-function getAvailableSpace(
-  referenceStart: number,
-  referenceSize: number,
-  containerEnd: number
-): number {
-  return containerEnd - (referenceStart + referenceSize);
+function checkBoundaryViolation(
+  value: number,
+  size: number,
+  boundaries: Boundaries | null,
+  padding: number,
+  isStart: boolean
+): boolean {
+  // For start positions (top/left)
+  if (isStart) {
+    if (!boundaries) {
+      return value - padding < 0; // Only check viewport boundary
+    }
+    return (
+      value - padding < 0 ||
+      value - padding < (isStart ? boundaries.top : boundaries.left)
+    );
+  }
+
+  // For end positions (bottom/right)
+  const viewportSize = isStart ? window.innerHeight : window.innerWidth;
+  const availableSpace = boundaries
+    ? boundaries[isStart ? "bottom" : "right"] - value
+    : viewportSize - value;
+
+  return availableSpace < size + padding;
 }
 
 function hasEnoughSpace(
@@ -64,75 +83,73 @@ function hasEnoughSpace(
 
   switch (mainAxis) {
     case "top":
-      return !(
-        y - padding < 0 || // Viewport top
-        (containerBoundaries && y - padding < containerBoundaries.top) || // Container top
-        (outerBoundaries && y - padding < outerBoundaries.top) // Outer container top
+      return (
+        !checkBoundaryViolation(
+          y,
+          floating.height,
+          containerBoundaries,
+          padding,
+          true
+        ) &&
+        !checkBoundaryViolation(
+          y,
+          floating.height,
+          outerBoundaries,
+          padding,
+          true
+        )
       );
-    case "bottom": {
-      // For bottom placement, check if there's enough space below
-      const bottomSpace = getAvailableSpace(
-        reference.y,
-        reference.height,
-        window.innerHeight
+    case "bottom":
+      return (
+        !checkBoundaryViolation(
+          reference.y + reference.height,
+          floating.height,
+          containerBoundaries,
+          padding,
+          false
+        ) &&
+        !checkBoundaryViolation(
+          reference.y + reference.height,
+          floating.height,
+          outerBoundaries,
+          padding,
+          false
+        )
       );
-      const containerBottomSpace = containerBoundaries
-        ? getAvailableSpace(
-            reference.y,
-            reference.height,
-            containerBoundaries.bottom
-          )
-        : Infinity;
-      const outerBottomSpace = outerBoundaries
-        ? getAvailableSpace(
-            reference.y,
-            reference.height,
-            outerBoundaries.bottom
-          )
-        : Infinity;
-
-      // Use the most restrictive space
-      const availableSpace = Math.min(
-        bottomSpace,
-        containerBottomSpace,
-        outerBottomSpace
-      );
-
-      return availableSpace >= floating.height + padding;
-    }
     case "left":
-      return !(
-        x - padding < 0 || // Viewport left
-        (containerBoundaries && x - padding < containerBoundaries.left) || // Container left
-        (outerBoundaries && x - padding < outerBoundaries.left) // Outer container left
+      return (
+        !checkBoundaryViolation(
+          x,
+          floating.width,
+          containerBoundaries,
+          padding,
+          true
+        ) &&
+        !checkBoundaryViolation(
+          x,
+          floating.width,
+          outerBoundaries,
+          padding,
+          true
+        )
       );
-    case "right": {
-      // For right placement, check if there's enough space to the right
-      const rightSpace = getAvailableSpace(
-        reference.x,
-        reference.width,
-        window.innerWidth
+    case "right":
+      return (
+        !checkBoundaryViolation(
+          reference.x + reference.width,
+          floating.width,
+          containerBoundaries,
+          padding,
+          false
+        ) &&
+        !checkBoundaryViolation(
+          reference.x + reference.width,
+          floating.width,
+          outerBoundaries,
+          padding,
+          false
+        )
       );
-      const containerRightSpace = containerBoundaries
-        ? getAvailableSpace(
-            reference.x,
-            reference.width,
-            containerBoundaries.right
-          )
-        : Infinity;
-      const outerRightSpace = outerBoundaries
-        ? getAvailableSpace(reference.x, reference.width, outerBoundaries.right)
-        : Infinity;
-
-      // Use the most restrictive space
-      const availableSpace = Math.min(
-        rightSpace,
-        containerRightSpace,
-        outerRightSpace
-      );
-
-      return availableSpace >= floating.width + padding;
-    }
   }
 }
 
