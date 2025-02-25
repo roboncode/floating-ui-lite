@@ -1,29 +1,9 @@
-import { ComputePositionState, Middleware, Placement, Rect } from "../../types";
+import { ComputePositionState, Middleware, Placement } from "../../types";
 
 import { getBoundingClientRect } from "../../utils/dom";
 
 export interface FlipOptions {
   padding?: number;
-}
-
-interface Boundaries {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-interface Space {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-interface PlacementSpace {
-  placement: Placement;
-  space: Space;
-  availableSpace: number;
 }
 
 const opposites: Record<string, string> = {
@@ -33,26 +13,13 @@ const opposites: Record<string, string> = {
   right: "left",
 };
 
-/**
- * Gets the viewport boundaries
- */
-function getViewportBoundaries(): Boundaries {
-  return {
-    top: 0,
-    right: window.innerWidth,
-    bottom: window.innerHeight,
-    left: 0,
-  };
+function isScrollableContainer(container: HTMLElement): boolean {
+  if (container === document.body) return false;
+  const { overflow, overflowX, overflowY } = window.getComputedStyle(container);
+  return /(auto|scroll|overlay)/.test(overflow + overflowY + overflowX);
 }
 
-/**
- * Gets the container boundaries in viewport coordinates
- */
-function getContainerBoundaries(container: HTMLElement): Boundaries {
-  if (container === document.body) {
-    return getViewportBoundaries();
-  }
-
+function getContainerBoundaries(container: HTMLElement) {
   const rect = getBoundingClientRect(container);
   return {
     top: rect.y,
@@ -62,97 +29,15 @@ function getContainerBoundaries(container: HTMLElement): Boundaries {
   };
 }
 
-/**
- * Creates a virtual rect for the floating element at a given position
- */
-function createVirtualRect(x: number, y: number, floating: Rect): Rect {
-  return {
-    x,
-    y,
-    width: floating.width,
-    height: floating.height,
-  };
-}
-
-/**
- * Calculates the available space between an element and boundaries
- */
-function calculateAvailableSpace(
-  elementRect: Rect,
-  boundaries: Boundaries
-): Space {
-  return {
-    top: elementRect.y - boundaries.top,
-    right: boundaries.right - (elementRect.x + elementRect.width),
-    bottom: boundaries.bottom - (elementRect.y + elementRect.height),
-    left: elementRect.x - boundaries.left,
-  };
-}
-
-/**
- * Calculates the minimum available space considering both container and viewport
- */
-function getMinimumSpace(containerSpace: Space, viewportSpace: Space): Space {
-  return {
-    top: Math.min(containerSpace.top, viewportSpace.top),
-    right: Math.min(containerSpace.right, viewportSpace.right),
-    bottom: Math.min(containerSpace.bottom, viewportSpace.bottom),
-    left: Math.min(containerSpace.left, viewportSpace.left),
-  };
-}
-
-/**
- * Calculates the position and available space for a specific placement
- */
-function getPlacementSpace(
-  state: ComputePositionState,
-  placement: Placement,
-  containerBoundaries: Boundaries,
-  viewportBoundaries: Boundaries
-): PlacementSpace {
-  const [mainAxis] = placement.split("-");
-  const { floating, reference } = state.rects;
-
-  // Calculate position in viewport coordinates
-  let x = reference.x;
-  let y = reference.y;
-
-  switch (mainAxis) {
-    case "top":
-      y = reference.y - floating.height;
-      break;
-    case "bottom":
-      y = reference.y + reference.height;
-      break;
-    case "left":
-      x = reference.x - floating.width;
-      break;
-    case "right":
-      x = reference.x + reference.width;
-      break;
+function findScrollableParent(element: Element): HTMLElement | null {
+  let parent = element.parentElement;
+  while (parent) {
+    if (isScrollableContainer(parent)) {
+      return parent;
+    }
+    parent = parent.parentElement;
   }
-
-  const virtualRect = createVirtualRect(x, y, floating);
-
-  // Calculate space for both container and viewport
-  const containerSpace = calculateAvailableSpace(
-    virtualRect,
-    containerBoundaries
-  );
-  const viewportSpace = calculateAvailableSpace(
-    virtualRect,
-    viewportBoundaries
-  );
-
-  // Use the minimum available space between container and viewport
-  const space = getMinimumSpace(containerSpace, viewportSpace);
-  const availableSpace = space[mainAxis as keyof Space];
-
-  return {
-    placement,
-    space,
-    availableSpace,
-  };
+  return null;
 }
 
 /**
@@ -162,68 +47,102 @@ export function flip(options: FlipOptions = {}): Middleware {
   return {
     name: "flip",
     async fn(state: ComputePositionState) {
-      const { placement, elements } = state;
+      const { placement, rects, elements } = state;
       const { padding = 5 } = options;
-
-      // Get both container and viewport boundaries
       const container = elements.container || document.body;
-      const containerBoundaries = getContainerBoundaries(container);
-      const viewportBoundaries = getViewportBoundaries();
 
-      // Get the main axis and opposite placement
-      const [mainAxis, alignment = ""] = placement.split("-");
-      const oppositePlacement =
-        `${opposites[mainAxis]}${alignment ? `-${alignment}` : ""}` as Placement;
+      // Get the main axis from placement
+      const [mainAxis] = placement.split("-");
+      const floating = rects.floating;
 
-      // Check space for both current and opposite placements
-      const currentSpace = getPlacementSpace(
-        state,
-        placement,
-        containerBoundaries,
-        viewportBoundaries
-      );
-      const oppositeSpace = getPlacementSpace(
-        state,
-        oppositePlacement,
-        containerBoundaries,
-        viewportBoundaries
-      );
+      // Check for outer scrollable container
+      const outerScrollable = findScrollableParent(container);
+      const outerBoundaries = outerScrollable
+        ? getContainerBoundaries(outerScrollable)
+        : null;
 
-      // Debug log
-      console.log("Flip calculation:", {
-        placement,
-        container: container === document.body ? "body" : "custom",
-        containerBoundaries,
-        viewportBoundaries,
-        currentSpace,
-        oppositeSpace,
-        padding,
-      });
+      // Get immediate container boundaries if scrollable
+      const containerBoundaries = isScrollableContainer(container)
+        ? getContainerBoundaries(container)
+        : null;
 
-      // If current placement has enough space, keep it
-      if (currentSpace.availableSpace >= padding) {
-        return {};
+      // Check if we need to flip based on available space
+      let shouldFlip = false;
+
+      switch (mainAxis) {
+        case "top":
+          shouldFlip =
+            state.y - padding < 0 || // Viewport top
+            (containerBoundaries
+              ? state.y - padding < containerBoundaries.top
+              : false) || // Container top
+            (outerBoundaries ? state.y - padding < outerBoundaries.top : false); // Outer container top
+          break;
+        case "bottom":
+          shouldFlip =
+            state.y + floating.height + padding > window.innerHeight || // Viewport bottom
+            (containerBoundaries
+              ? state.y + floating.height + padding > containerBoundaries.bottom
+              : false) || // Container bottom
+            (outerBoundaries
+              ? state.y + floating.height + padding > outerBoundaries.bottom
+              : false); // Outer container bottom
+          break;
+        case "left":
+          shouldFlip =
+            state.x - padding < 0 || // Viewport left
+            (containerBoundaries
+              ? state.x - padding < containerBoundaries.left
+              : false) || // Container left
+            (outerBoundaries
+              ? state.x - padding < outerBoundaries.left
+              : false); // Outer container left
+          break;
+        case "right":
+          shouldFlip =
+            state.x + floating.width + padding > window.innerWidth || // Viewport right
+            (containerBoundaries
+              ? state.x + floating.width + padding > containerBoundaries.right
+              : false) || // Container right
+            (outerBoundaries
+              ? state.x + floating.width + padding > outerBoundaries.right
+              : false); // Outer container right
+          break;
       }
 
-      // If opposite has more space, use it
-      if (oppositeSpace.availableSpace > currentSpace.availableSpace) {
+      if (shouldFlip) {
+        const alignment = placement.split("-")[1] || "";
+        const oppositePlacement =
+          `${opposites[mainAxis]}${alignment ? `-${alignment}` : ""}` as Placement;
+
+        console.log("Flipping from", placement, "to", oppositePlacement, {
+          position: { x: state.x, y: state.y },
+          dimensions: { width: floating.width, height: floating.height },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          container: containerBoundaries
+            ? {
+                top: containerBoundaries.top,
+                right: containerBoundaries.right,
+                bottom: containerBoundaries.bottom,
+                left: containerBoundaries.left,
+              }
+            : "body",
+          outerContainer: outerBoundaries
+            ? {
+                top: outerBoundaries.top,
+                right: outerBoundaries.right,
+                bottom: outerBoundaries.bottom,
+                left: outerBoundaries.left,
+              }
+            : null,
+          isScrollable: isScrollableContainer(container),
+        });
+
         return {
           placement: oppositePlacement,
-          middlewareData: {
-            ...state.middlewareData,
-            flip: {
-              originalPlacement: placement,
-              finalPlacement: oppositePlacement,
-              spaces: {
-                original: currentSpace,
-                opposite: oppositeSpace,
-              },
-            },
-          },
         };
       }
 
-      // If neither has enough space, keep the original placement
       return {};
     },
   };
