@@ -43,31 +43,33 @@ function findScrollableParent(element: Element): HTMLElement | null {
   return null;
 }
 
-function checkBoundaryViolation(
+function getAvailableSpace(
   value: number,
   size: number,
   boundaries: Boundaries | null,
-  padding: number,
-  isStart: boolean
-): boolean {
+  mainAxis: MainAxis
+): number {
   // For start positions (top/left)
-  if (isStart) {
-    if (!boundaries) {
-      return value - padding < 0; // Only check viewport boundary
-    }
-    return (
-      value - padding < 0 ||
-      value - padding < (isStart ? boundaries.top : boundaries.left)
-    );
+  const isVertical = mainAxis === "top" || mainAxis === "bottom";
+  const viewportSize = isVertical ? window.innerHeight : window.innerWidth;
+
+  if (!boundaries) {
+    return mainAxis === "top" || mainAxis === "left"
+      ? value // Space from edge to value
+      : viewportSize - (value + size); // Space from value to viewport edge
   }
 
-  // For end positions (bottom/right)
-  const viewportSize = isStart ? window.innerHeight : window.innerWidth;
-  const availableSpace = boundaries
-    ? boundaries[isStart ? "bottom" : "right"] - value
-    : viewportSize - value;
-
-  return availableSpace < size + padding;
+  // Return space based on axis and direction
+  switch (mainAxis) {
+    case "top":
+      return value - boundaries.top;
+    case "bottom":
+      return boundaries.bottom - (value + size);
+    case "left":
+      return value - boundaries.left;
+    case "right":
+      return boundaries.right - (value + size);
+  }
 }
 
 function hasEnoughSpace(
@@ -81,76 +83,59 @@ function hasEnoughSpace(
   const floating = state.rects.floating;
   const reference = state.rects.reference;
 
+  // Calculate available space for each boundary
+  let spaces: number[] = [];
+
   switch (mainAxis) {
     case "top":
-      return (
-        !checkBoundaryViolation(
-          y,
-          floating.height,
-          containerBoundaries,
-          padding,
-          true
-        ) &&
-        !checkBoundaryViolation(
-          y,
-          floating.height,
-          outerBoundaries,
-          padding,
-          true
-        )
-      );
+      spaces = [
+        getAvailableSpace(y, floating.height, containerBoundaries, mainAxis),
+        getAvailableSpace(y, floating.height, outerBoundaries, mainAxis),
+      ];
+      break;
     case "bottom":
-      return (
-        !checkBoundaryViolation(
+      spaces = [
+        getAvailableSpace(
           reference.y + reference.height,
           floating.height,
           containerBoundaries,
-          padding,
-          false
-        ) &&
-        !checkBoundaryViolation(
+          mainAxis
+        ),
+        getAvailableSpace(
           reference.y + reference.height,
           floating.height,
           outerBoundaries,
-          padding,
-          false
-        )
-      );
+          mainAxis
+        ),
+      ];
+      break;
     case "left":
-      return (
-        !checkBoundaryViolation(
-          x,
-          floating.width,
-          containerBoundaries,
-          padding,
-          true
-        ) &&
-        !checkBoundaryViolation(
-          x,
-          floating.width,
-          outerBoundaries,
-          padding,
-          true
-        )
-      );
+      spaces = [
+        getAvailableSpace(x, floating.width, containerBoundaries, mainAxis),
+        getAvailableSpace(x, floating.width, outerBoundaries, mainAxis),
+      ];
+      break;
     case "right":
-      return (
-        !checkBoundaryViolation(
+      spaces = [
+        getAvailableSpace(
           reference.x + reference.width,
           floating.width,
           containerBoundaries,
-          padding,
-          false
-        ) &&
-        !checkBoundaryViolation(
+          mainAxis
+        ),
+        getAvailableSpace(
           reference.x + reference.width,
           floating.width,
           outerBoundaries,
-          padding,
-          false
-        )
-      );
+          mainAxis
+        ),
+      ];
+      break;
   }
+
+  // Filter out null boundaries (represented by Infinity) and get minimum space
+  const availableSpace = Math.min(...spaces.map((space) => space ?? Infinity));
+  return availableSpace >= padding;
 }
 
 /**
@@ -177,8 +162,8 @@ export function flip(options: FlipOptions = {}): Middleware {
         ? getContainerBoundaries(outerScrollable)
         : null;
 
-      // Check if we need to flip based on available space
-      const hasSpace = hasEnoughSpace(
+      // Calculate space for current placement
+      const currentSpace = hasEnoughSpace(
         state,
         mainAxis,
         containerBoundaries,
@@ -186,7 +171,7 @@ export function flip(options: FlipOptions = {}): Middleware {
         padding
       );
 
-      if (!hasSpace) {
+      if (!currentSpace) {
         const alignment = placement.split("-")[1] || "";
         const oppositePlacement = `${opposites[mainAxis]}${
           alignment ? `-${alignment}` : ""
@@ -198,8 +183,8 @@ export function flip(options: FlipOptions = {}): Middleware {
           placement: oppositePlacement,
         };
 
-        // Only flip if the opposite placement has space
-        const oppositeHasSpace = hasEnoughSpace(
+        // Calculate space for opposite placement
+        const oppositeSpace = hasEnoughSpace(
           testState,
           opposites[mainAxis],
           containerBoundaries,
@@ -207,7 +192,7 @@ export function flip(options: FlipOptions = {}): Middleware {
           padding
         );
 
-        if (oppositeHasSpace) {
+        if (oppositeSpace) {
           console.log("Flipping from", placement, "to", oppositePlacement, {
             position: { x: state.x, y: state.y },
             dimensions: state.rects.floating,
