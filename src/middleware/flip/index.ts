@@ -53,7 +53,6 @@ function hasEnoughSpace(
 
   switch (mainAxis) {
     case "top":
-      // For top placement, check if there's enough space above
       return !(
         y - padding < 0 || // Viewport top
         (containerBoundaries && y - padding < containerBoundaries.top) || // Container top
@@ -115,23 +114,21 @@ export function flip(options: FlipOptions = {}): Middleware {
   return {
     name: "flip",
     async fn(state: ComputePositionState) {
-      const { placement, rects, elements } = state;
+      const { placement, elements } = state;
       const { padding = 5 } = options;
       const container = elements.container || document.body;
 
       // Get the main axis from placement
       const [mainAxis] = placement.split("-");
-      const floating = rects.floating;
 
-      // Check for outer scrollable container
+      // Get container boundaries
+      const containerBoundaries = isScrollableContainer(container)
+        ? getContainerBoundaries(container)
+        : null;
+
       const outerScrollable = findScrollableParent(container);
       const outerBoundaries = outerScrollable
         ? getContainerBoundaries(outerScrollable)
-        : null;
-
-      // Get immediate container boundaries if scrollable
-      const containerBoundaries = isScrollableContainer(container)
-        ? getContainerBoundaries(container)
         : null;
 
       // Check if we need to flip based on available space
@@ -167,7 +164,7 @@ export function flip(options: FlipOptions = {}): Middleware {
         if (oppositeHasSpace) {
           console.log("Flipping from", placement, "to", oppositePlacement, {
             position: { x: state.x, y: state.y },
-            dimensions: { width: floating.width, height: floating.height },
+            dimensions: state.rects.floating,
             viewport: { width: window.innerWidth, height: window.innerHeight },
             container: containerBoundaries
               ? {
@@ -185,7 +182,6 @@ export function flip(options: FlipOptions = {}): Middleware {
                   left: outerBoundaries.left,
                 }
               : null,
-            isScrollable: isScrollableContainer(container),
           });
 
           return {
