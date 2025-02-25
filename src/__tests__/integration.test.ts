@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { arrow } from "../middleware/arrow";
 import { computePosition } from "../core/computePosition";
+import { arrow } from "../middleware/arrow";
 import { flip } from "../middleware/flip";
 import { placement } from "../middleware/placement";
 import { shift } from "../middleware/shift";

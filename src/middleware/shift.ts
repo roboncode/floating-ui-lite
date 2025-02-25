@@ -1,6 +1,6 @@
-import { ComputePositionState, Middleware } from '../../types';
+import { ComputePositionState, Middleware } from "../types";
 
-import { getViewportDimensions } from '../../utils/dom';
+import { getViewportDimensions } from "../utils/dom";
 
 interface ShiftOptions {
   padding?: number;
@@ -12,11 +12,11 @@ interface ShiftOptions {
  */
 export function shift(options: ShiftOptions = {}): Middleware {
   return {
-    name: 'shift',
+    name: "shift",
     async fn(state: ComputePositionState) {
       const { x, y, rects } = state;
       const { padding = 5 } = options;
-      
+
       const viewport = getViewportDimensions();
       let shiftX = x;
       let shiftY = y;
@@ -44,13 +44,13 @@ export function shift(options: ShiftOptions = {}): Middleware {
             ...state.middlewareData,
             shift: {
               x: shiftX - x,
-              y: shiftY - y
-            }
-          }
+              y: shiftY - y,
+            },
+          },
         };
       }
 
       return {};
-    }
+    },
   };
-} 
+}

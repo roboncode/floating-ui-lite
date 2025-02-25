@@ -1,4 +1,4 @@
-import { Middleware } from "../../types";
+import { Middleware } from "../types";
 
 export function offset(value: number = 0): Middleware {
   return {

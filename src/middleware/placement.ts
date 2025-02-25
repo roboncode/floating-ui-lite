@@ -1,4 +1,4 @@
-import { ComputePositionState, Middleware, Placement } from "../../types";
+import { ComputePositionState, Middleware, Placement } from "../types";
 
 interface PlacementOptions {
   fallbackPlacements?: Placement[];

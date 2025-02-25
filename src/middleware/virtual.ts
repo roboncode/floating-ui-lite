@@ -1,6 +1,6 @@
-import { ComputePositionState, Middleware } from "../../types";
+import { ComputePositionState, Middleware } from "../types";
 
-import { getScrollParent } from "../../utils/dom";
+import { getScrollParent } from "../utils/dom";
 
 export interface VirtualOptions {
   ancestorScroll?: boolean;

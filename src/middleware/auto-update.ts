@@ -1,4 +1,4 @@
-import { ComputePositionState, Middleware } from "../../types";
+import { ComputePositionState, Middleware } from "../types";
 
 /**
  * AutoUpdate middleware that handles automatic position updates
