@@ -6,7 +6,10 @@ export interface FlipOptions {
   padding?: number;
 }
 
-const opposites: Record<string, string> = {
+type MainAxis = "top" | "bottom" | "left" | "right";
+type Boundaries = ReturnType<typeof getContainerBoundaries>;
+
+const opposites: Record<MainAxis, MainAxis> = {
   top: "bottom",
   bottom: "top",
   left: "right",
@@ -50,9 +53,9 @@ function getAvailableSpace(
 
 function hasEnoughSpace(
   state: ComputePositionState,
-  mainAxis: string,
-  containerBoundaries: ReturnType<typeof getContainerBoundaries> | null,
-  outerBoundaries: ReturnType<typeof getContainerBoundaries> | null,
+  mainAxis: MainAxis,
+  containerBoundaries: Boundaries | null,
+  outerBoundaries: Boundaries | null,
   padding: number
 ): boolean {
   const { x, y } = state;
@@ -130,8 +133,6 @@ function hasEnoughSpace(
 
       return availableSpace >= floating.width + padding;
     }
-    default:
-      return true;
   }
 }
 
@@ -147,7 +148,7 @@ export function flip(options: FlipOptions = {}): Middleware {
       const container = elements.container || document.body;
 
       // Get the main axis from placement
-      const [mainAxis] = placement.split("-");
+      const [mainAxis] = placement.split("-") as [MainAxis];
 
       // Get container boundaries
       const containerBoundaries = isScrollableContainer(container)
