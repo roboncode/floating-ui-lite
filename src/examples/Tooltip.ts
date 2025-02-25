@@ -1,6 +1,10 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
 import { offset } from "../middleware/offset";
+import { placement } from "../middleware/placement";
+
+// Create middleware array outside class
+const createMiddleware = () => [offset(6), placement()];
 
 export class Tooltip {
   private reference: HTMLElement;
@@ -37,15 +41,22 @@ export class Tooltip {
     style.textContent = `
       .tooltip {
         position: absolute;
-        background: #333;
+        background: #1c1c1e;
         color: white;
-        padding: 8px;
-        border-radius: 4px;
-        font-size: 14px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
         pointer-events: none;
-        transition: opacity 0.2s;
+        transition: opacity 0.2s cubic-bezier(0.2, 0, 0.13, 1);
         opacity: 0;
         z-index: 1000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.4;
       }
     `;
     document.head.appendChild(style);
@@ -56,7 +67,7 @@ export class Tooltip {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
-      middleware: [offset(8)],
+      middleware: createMiddleware(),
     });
 
     Object.assign(this.floating.style, {
@@ -108,5 +119,13 @@ export class Tooltip {
     this.reference.removeEventListener("mouseenter", this.show);
     this.reference.removeEventListener("mouseleave", this.hide);
     this.hide();
+  }
+
+  // Add method to update placement
+  updatePlacement(newPlacement: Placement) {
+    this.placement = newPlacement;
+    if (this.floating.isConnected) {
+      this.update();
+    }
   }
 }

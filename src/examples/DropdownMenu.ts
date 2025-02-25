@@ -1,6 +1,10 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
 import { offset } from "../middleware/offset";
+import { placement } from "../middleware/placement";
+
+// Create middleware array outside class
+const createMiddleware = () => [offset(6), placement()];
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -31,13 +35,12 @@ export class DropdownMenu {
       const menuItem = document.createElement("div");
       menuItem.className = "dropdown-menu-item";
       menuItem.textContent = item;
-      menuItem.addEventListener("click", () => {
-        this.hide();
-        // Emit custom event with selected item
-        this.trigger.dispatchEvent(
-          new CustomEvent("menuselect", { detail: item })
-        );
-      });
+      // menuItem.addEventListener("click", () => {
+      //   // Emit custom event with selected item
+      //   this.trigger.dispatchEvent(
+      //     new CustomEvent("menuselect", { detail: item })
+      //   );
+      // });
       this.menu.appendChild(menuItem);
     });
 
@@ -63,16 +66,20 @@ export class DropdownMenu {
       .dropdown-menu {
         position: absolute;
         background: white;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        min-width: 150px;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08),
+                    0 0 1px rgba(0, 0, 0, 0.1);
+        min-width: 180px;
         opacity: 0;
         transform-origin: top;
         transform: scale(0.95);
-        transition: opacity 0.1s, transform 0.1s;
+        transition-property: opacity, transform;
+        transition-duration: 0.2s;
+        transition-timing-function: cubic-bezier(0.2, 0, 0.13, 1);
         z-index: 1000;
         display: none;
+        padding: 6px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
 
       .dropdown-menu.show {
@@ -84,15 +91,18 @@ export class DropdownMenu {
       .dropdown-menu-item {
         padding: 8px 12px;
         cursor: pointer;
-        transition: background-color 0.1s;
+        transition: all 0.1s ease;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #1c1c1e;
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.2;
       }
 
       .dropdown-menu-item:hover {
-        background-color: #f5f5f5;
-      }
-
-      .dropdown-menu-item:not(:last-child) {
-        border-bottom: 1px solid #eee;
+        background-color: rgba(0, 0, 0, 0.04);
+        color: #006FFF;
       }
     `;
     document.head.appendChild(style);
@@ -102,15 +112,6 @@ export class DropdownMenu {
     this.trigger.addEventListener("click", this.clickHandler);
   }
 
-  private handleClickOutside = (event: MouseEvent) => {
-    if (!this.isOpen) return;
-
-    const target = event.target as Node;
-    if (!this.menu.contains(target) && !this.trigger.contains(target)) {
-      this.hide();
-    }
-  };
-
   private updatePosition = async () => {
     if (!this.isOpen) return;
 
@@ -118,7 +119,7 @@ export class DropdownMenu {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
-      middleware: [offset(12)],
+      middleware: createMiddleware(),
     });
 
     Object.assign(this.menu.style, {
@@ -139,9 +140,6 @@ export class DropdownMenu {
         this.menu.classList.add("show");
       });
     });
-
-    // Add click outside listener
-    document.addEventListener("click", this.handleClickOutside);
 
     // Start update loop
     const update = () => {
@@ -164,9 +162,6 @@ export class DropdownMenu {
       this.animationFrame = null;
     }
 
-    // Remove click outside listener
-    document.removeEventListener("click", this.handleClickOutside);
-
     // Remove menu after transition
     const onTransitionEnd = () => {
       if (this.menu.parentNode) {
@@ -180,7 +175,6 @@ export class DropdownMenu {
   destroy() {
     this.hide();
     this.trigger.removeEventListener("click", this.clickHandler);
-    document.removeEventListener("click", this.handleClickOutside);
 
     // Force cleanup if menu is still in DOM
     if (this.menu.parentNode) {
@@ -190,5 +184,12 @@ export class DropdownMenu {
     // Reset state
     this.isOpen = false;
     this.animationFrame = null;
+  }
+
+  updatePlacement(newPlacement: Placement) {
+    this.placement = newPlacement;
+    if (this.isOpen) {
+      this.updatePosition();
+    }
   }
 }
