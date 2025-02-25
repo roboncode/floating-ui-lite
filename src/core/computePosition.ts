@@ -61,6 +61,7 @@ export async function computePosition(
     placement = defaultOptions.placement,
     strategy = defaultOptions.strategy,
     container = defaultOptions.container,
+    middleware = [],
   } = options;
 
   // Get element rectangles - only calculate what's needed
@@ -87,7 +88,7 @@ export async function computePosition(
   );
 
   // Initialize positioning state
-  const state: ComputePositionState = {
+  let state: ComputePositionState = {
     x: 0,
     y: 0,
     strategy,
@@ -107,19 +108,30 @@ export async function computePosition(
     placement
   );
 
+  // Apply initial position
+  state.x = x;
+  state.y = y;
+
+  // Run middleware
+  for (const { fn } of middleware) {
+    const response = await fn(state);
+    if (response) {
+      state = {
+        ...state,
+        ...response,
+      };
+    }
+  }
+
   // Adjust position based on strategy and container context
   if (strategy === "absolute") {
     const isBodyContainer = container === document.body;
-    state.x =
-      x +
-      (isBodyContainer ? windowScroll.x : -containerRect.x + scrollOffset.x);
-    state.y =
-      y +
-      (isBodyContainer ? windowScroll.y : -containerRect.y + scrollOffset.y);
-  } else {
-    // Fixed positioning uses viewport coordinates
-    state.x = x;
-    state.y = y;
+    state.x += isBodyContainer
+      ? windowScroll.x
+      : -containerRect.x + scrollOffset.x;
+    state.y += isBodyContainer
+      ? windowScroll.y
+      : -containerRect.y + scrollOffset.y;
   }
 
   return state;

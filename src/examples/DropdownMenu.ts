@@ -1,5 +1,7 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { offset } from "../middleware/offset";
+
 export class DropdownMenu {
   private trigger: HTMLElement;
   private menu: HTMLElement;
@@ -116,6 +118,7 @@ export class DropdownMenu {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
+      middleware: [offset(12)],
     });
 
     Object.assign(this.menu.style, {

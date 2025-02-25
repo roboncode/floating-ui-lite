@@ -10,10 +10,12 @@ export { size } from "./middleware/size";
 export { virtual } from "./middleware/virtual";
 
 export type {
+  ComputePositionOptions,
   ComputePositionState,
   Coords,
   Dimensions,
   Elements,
+  FloatingOptions,
   Middleware,
   MiddlewareOptions,
   Placement,

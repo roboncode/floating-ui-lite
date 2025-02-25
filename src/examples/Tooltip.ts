@@ -1,5 +1,7 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { offset } from "../middleware/offset";
+
 export class Tooltip {
   private reference: HTMLElement;
   private floating: HTMLElement;
@@ -54,6 +56,7 @@ export class Tooltip {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
+      middleware: [offset(8)],
     });
 
     Object.assign(this.floating.style, {
