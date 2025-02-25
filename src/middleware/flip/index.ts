@@ -138,6 +138,29 @@ function hasEnoughSpace(
   return availableSpace >= padding;
 }
 
+interface BoundaryCache {
+  containerBoundaries: Boundaries | null;
+  outerBoundaries: Boundaries | null;
+}
+
+function getBoundaries(container: HTMLElement): BoundaryCache {
+  // Get container boundaries
+  const containerBoundaries = isScrollableContainer(container)
+    ? getContainerBoundaries(container)
+    : null;
+
+  // Get outer boundaries
+  const outerScrollable = findScrollableParent(container);
+  const outerBoundaries = outerScrollable
+    ? getContainerBoundaries(outerScrollable)
+    : null;
+
+  return {
+    containerBoundaries,
+    outerBoundaries,
+  };
+}
+
 /**
  * Flip middleware that changes placement when there isn't enough space
  */
@@ -155,15 +178,8 @@ export function flip(options: FlipOptions = {}): Middleware {
         string?,
       ];
 
-      // Get container boundaries
-      const containerBoundaries = isScrollableContainer(container)
-        ? getContainerBoundaries(container)
-        : null;
-
-      const outerScrollable = findScrollableParent(container);
-      const outerBoundaries = outerScrollable
-        ? getContainerBoundaries(outerScrollable)
-        : null;
+      // Get and cache boundaries
+      const { containerBoundaries, outerBoundaries } = getBoundaries(container);
 
       // Calculate space for current placement
       const currentSpace = hasEnoughSpace(
