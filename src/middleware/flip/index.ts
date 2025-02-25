@@ -40,6 +40,14 @@ function findScrollableParent(element: Element): HTMLElement | null {
   return null;
 }
 
+function getAvailableSpace(
+  referenceStart: number,
+  referenceSize: number,
+  containerEnd: number
+): number {
+  return containerEnd - (referenceStart + referenceSize);
+}
+
 function hasEnoughSpace(
   state: ComputePositionState,
   mainAxis: string,
@@ -60,12 +68,24 @@ function hasEnoughSpace(
       );
     case "bottom": {
       // For bottom placement, check if there's enough space below
-      const bottomSpace = window.innerHeight - (reference.y + reference.height);
+      const bottomSpace = getAvailableSpace(
+        reference.y,
+        reference.height,
+        window.innerHeight
+      );
       const containerBottomSpace = containerBoundaries
-        ? containerBoundaries.bottom - (reference.y + reference.height)
+        ? getAvailableSpace(
+            reference.y,
+            reference.height,
+            containerBoundaries.bottom
+          )
         : Infinity;
       const outerBottomSpace = outerBoundaries
-        ? outerBoundaries.bottom - (reference.y + reference.height)
+        ? getAvailableSpace(
+            reference.y,
+            reference.height,
+            outerBoundaries.bottom
+          )
         : Infinity;
 
       // Use the most restrictive space
@@ -85,12 +105,20 @@ function hasEnoughSpace(
       );
     case "right": {
       // For right placement, check if there's enough space to the right
-      const rightSpace = window.innerWidth - (reference.x + reference.width);
+      const rightSpace = getAvailableSpace(
+        reference.x,
+        reference.width,
+        window.innerWidth
+      );
       const containerRightSpace = containerBoundaries
-        ? containerBoundaries.right - (reference.x + reference.width)
+        ? getAvailableSpace(
+            reference.x,
+            reference.width,
+            containerBoundaries.right
+          )
         : Infinity;
       const outerRightSpace = outerBoundaries
-        ? outerBoundaries.right - (reference.x + reference.width)
+        ? getAvailableSpace(reference.x, reference.width, outerBoundaries.right)
         : Infinity;
 
       // Use the most restrictive space
