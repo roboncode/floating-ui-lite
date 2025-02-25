@@ -7,21 +7,38 @@ import {
 
 import { getBoundingClientRect } from "../utils/dom";
 
-const defaultOptions: Required<ComputePositionOptions> = {
+const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   placement: "bottom",
   strategy: "absolute",
-  middleware: [],
   container: document.body,
 };
 
+// Cache common values
+const getWindowScroll = () => ({
+  x: window.pageXOffset || document.documentElement.scrollLeft,
+  y: window.pageYOffset || document.documentElement.scrollTop,
+});
+
+const getViewportRect = (): Rect => ({
+  x: 0,
+  y: 0,
+  width: window.innerWidth,
+  height: window.innerHeight,
+});
+
+/**
+ * Gets all scrollable parent elements up to the specified container
+ */
 function getScrollParents(element: Element, container: HTMLElement): Element[] {
   const parents: Element[] = [];
   let parent = element.parentElement;
 
-  while (parent && parent !== container.parentElement) {
-    const style = window.getComputedStyle(parent);
-    const { overflow, overflowX, overflowY } = style;
+  // Early return if no parent
+  if (!parent) return parents;
 
+  const containerParent = container.parentElement;
+  while (parent && parent !== containerParent) {
+    const { overflow, overflowX, overflowY } = window.getComputedStyle(parent);
     if (/(auto|scroll|overlay)/.test(overflow + overflowY + overflowX)) {
       parents.push(parent);
     }
@@ -31,26 +48,9 @@ function getScrollParents(element: Element, container: HTMLElement): Element[] {
   return parents;
 }
 
-function getOffsetParent(element: Element, container: HTMLElement): Element {
-  if (container !== document.body) {
-    return container;
-  }
-
-  const el = element as HTMLElement;
-  let offsetParent = el.offsetParent;
-
-  while (
-    offsetParent &&
-    window.getComputedStyle(offsetParent).position === "static"
-  ) {
-    offsetParent = (offsetParent as HTMLElement).offsetParent;
-  }
-
-  return offsetParent || document.body;
-}
-
 /**
- * Computes the position of the floating element relative to the reference element
+ * Computes the position of a floating element relative to its reference element.
+ * Handles different container contexts and scroll scenarios.
  */
 export async function computePosition(
   reference: Element,
@@ -60,43 +60,33 @@ export async function computePosition(
   const {
     placement = defaultOptions.placement,
     strategy = defaultOptions.strategy,
-    middleware = defaultOptions.middleware,
     container = defaultOptions.container,
   } = options;
 
-  // Get rects
+  // Get element rectangles - only calculate what's needed
   const referenceRect = getBoundingClientRect(reference);
   const floatingRect = getBoundingClientRect(floating);
+
+  // Only calculate container rect if not body
   const containerRect =
     container === document.body
-      ? { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight }
+      ? getViewportRect()
       : getBoundingClientRect(container);
 
-  // Get scroll parents and compute total scroll offset
-  // For mixed container scenarios, we need to get scroll parents up to document.body
-  const scrollParents =
-    container === document.body
-      ? getScrollParents(reference, document.body)
-      : getScrollParents(reference, container);
+  // Get window scroll position once
+  const windowScroll = getWindowScroll();
 
-  // Calculate window scroll position
-  const windowScroll = {
-    x: window.pageXOffset || document.documentElement.scrollLeft,
-    y: window.pageYOffset || document.documentElement.scrollTop,
-  };
-
-  // Calculate scroll offsets up to the container or document.body
-  const scrollOffset = scrollParents.reduce(
-    (offset, parent) => {
-      return {
-        x: offset.x + (parent.scrollLeft || 0),
-        y: offset.y + (parent.scrollTop || 0),
-      };
-    },
+  // Calculate scroll offsets from scrollable parents
+  const scrollParents = getScrollParents(reference, container);
+  const scrollOffset = scrollParents.reduce<{ x: number; y: number }>(
+    (offset, parent) => ({
+      x: offset.x + (parent.scrollLeft || 0),
+      y: offset.y + (parent.scrollTop || 0),
+    }),
     { x: 0, y: 0 }
   );
 
-  // Initial state
+  // Initialize positioning state
   const state: ComputePositionState = {
     x: 0,
     y: 0,
@@ -112,47 +102,32 @@ export async function computePosition(
 
   // Calculate initial position based on placement
   const { x, y } = computeInitialPosition(
-    state.rects.reference,
-    state.rects.floating,
-    state.placement
+    referenceRect,
+    floatingRect,
+    placement
   );
 
-  // Adjust position based on strategy and container
+  // Adjust position based on strategy and container context
   if (strategy === "absolute") {
-    if (container === document.body) {
-      // For body container or mixed scenarios (Container → Body),
-      // we need to account for all scroll offsets up to document.body
-      state.x = x + windowScroll.x + scrollOffset.x;
-      state.y = y + windowScroll.y + scrollOffset.y;
-    } else {
-      // For container-only scenarios
-      state.x = x - containerRect.x + scrollOffset.x;
-      state.y = y - containerRect.y + scrollOffset.y;
-    }
+    const isBodyContainer = container === document.body;
+    state.x =
+      x +
+      (isBodyContainer ? windowScroll.x : -containerRect.x + scrollOffset.x);
+    state.y =
+      y +
+      (isBodyContainer ? windowScroll.y : -containerRect.y + scrollOffset.y);
   } else {
-    // For fixed positioning, use viewport-relative coordinates
+    // Fixed positioning uses viewport coordinates
     state.x = x;
     state.y = y;
-  }
-
-  // Run middleware
-  for (const { fn } of middleware) {
-    const nextState = await fn(state);
-    if (nextState.middlewareData) {
-      state.middlewareData = {
-        ...state.middlewareData,
-        ...nextState.middlewareData,
-      };
-      delete nextState.middlewareData;
-    }
-    Object.assign(state, nextState);
   }
 
   return state;
 }
 
 /**
- * Computes the initial position based on placement
+ * Calculates the initial position of the floating element based on its placement preference.
+ * This position will be adjusted later for scroll and container context.
  */
 function computeInitialPosition(
   reference: Rect,
@@ -161,14 +136,9 @@ function computeInitialPosition(
 ): { x: number; y: number } {
   const [mainAxis, crossAxis = "center"] = placement.split("-");
 
-  // Initialize x and y at the reference position
+  // Initialize at reference position
   let x = reference.x;
   let y = reference.y;
-
-  // For bottom placement with center alignment, align with reference center
-  if (mainAxis === "bottom" && crossAxis === "center") {
-    x = reference.x;
-  }
 
   // Adjust based on main placement axis
   switch (mainAxis) {
@@ -189,7 +159,7 @@ function computeInitialPosition(
   // Adjust cross axis alignment
   switch (crossAxis) {
     case "start":
-      // No adjustment needed for start alignment
+      // No adjustment needed
       break;
     case "end":
       if (mainAxis === "top" || mainAxis === "bottom") {
@@ -200,13 +170,12 @@ function computeInitialPosition(
       break;
     default: // center
       if (mainAxis === "top" || mainAxis === "bottom") {
-        x = reference.x;
+        x = reference.x + (reference.width - floating.width) / 2;
       } else {
         y = reference.y + (reference.height - floating.height) / 2;
       }
   }
 
-  // Ensure x and y are integers to avoid subpixel rendering
   return {
     x: Math.round(x),
     y: Math.round(y),

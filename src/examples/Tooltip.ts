@@ -1,16 +1,8 @@
-import {
-  FloatingOptions,
-  Placement,
-  arrow,
-  computePosition,
-  flip,
-  shift,
-} from "../index";
+import { FloatingOptions, Placement, computePosition } from "../index";
 
 export class Tooltip {
   private reference: HTMLElement;
   private floating: HTMLElement;
-  private arrow: HTMLElement;
   private placement: Placement;
   private container: HTMLElement;
   private cleanup: (() => void) | null = null;
@@ -29,11 +21,6 @@ export class Tooltip {
     this.floating = document.createElement("div");
     this.floating.className = "tooltip";
     this.floating.textContent = content;
-
-    // Create arrow element
-    this.arrow = document.createElement("div");
-    this.arrow.className = "tooltip-arrow";
-    this.floating.appendChild(this.arrow);
 
     // Add styles
     this.addStyles();
@@ -58,46 +45,20 @@ export class Tooltip {
         opacity: 0;
         z-index: 1000;
       }
-
-      .tooltip-arrow {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        background: #333;
-        transform: rotate(45deg);
-      }
     `;
     document.head.appendChild(style);
   }
 
   private update = async () => {
-    const { x, y, placement, middlewareData } = await computePosition(
-      this.reference,
-      this.floating,
-      {
-        placement: this.placement,
-        strategy: "absolute",
-        container: this.container,
-        middleware: [
-          flip(),
-          shift({ padding: 5 }),
-          arrow({ element: this.arrow, padding: 5 }),
-        ],
-      }
-    );
+    const { x, y } = await computePosition(this.reference, this.floating, {
+      placement: this.placement,
+      strategy: "absolute",
+      container: this.container,
+    });
 
     Object.assign(this.floating.style, {
       left: `${x}px`,
       top: `${y}px`,
-    });
-
-    const { x: arrowX, y: arrowY } = middlewareData.arrow;
-
-    Object.assign(this.arrow.style, {
-      left: arrowX != null ? `${arrowX}px` : "",
-      top: arrowY != null ? `${arrowY}px` : "",
-      [placement.includes("top") ? "bottom" : "top"]: "-4px",
-      [placement.includes("left") ? "right" : "left"]: "-4px",
     });
   };
 

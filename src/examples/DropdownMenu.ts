@@ -1,11 +1,4 @@
-import {
-  FloatingOptions,
-  Placement,
-  computePosition,
-  flip,
-  offset,
-  shift,
-} from "../index";
+import { FloatingOptions, Placement, computePosition } from "../index";
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -123,7 +116,6 @@ export class DropdownMenu {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
-      middleware: [offset(6), flip(), shift({ padding: 5 })],
     });
 
     Object.assign(this.menu.style, {
