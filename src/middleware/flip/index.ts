@@ -149,8 +149,11 @@ export function flip(options: FlipOptions = {}): Middleware {
       const { padding = 5 } = options;
       const container = elements.container || document.body;
 
-      // Get the main axis from placement
-      const [mainAxis] = placement.split("-") as [MainAxis];
+      // Cache placement parts
+      const [mainAxis, alignment = ""] = placement.split("-") as [
+        MainAxis,
+        string?,
+      ];
 
       // Get container boundaries
       const containerBoundaries = isScrollableContainer(container)
@@ -172,7 +175,6 @@ export function flip(options: FlipOptions = {}): Middleware {
       );
 
       if (!currentSpace) {
-        const alignment = placement.split("-")[1] || "";
         const oppositePlacement = `${opposites[mainAxis]}${
           alignment ? `-${alignment}` : ""
         }` as Placement;
