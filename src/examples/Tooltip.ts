@@ -2,9 +2,13 @@ import { FloatingOptions, Placement, computePosition } from "../index";
 
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
+import { throttle } from "../utils/throttle";
 
 // Create middleware array outside class
 const createMiddleware = () => [offset(6), placement()];
+
+// Throttle interval in ms
+const THROTTLE_INTERVAL = 100; // Approximately 60fps
 
 export class Tooltip {
   private reference: HTMLElement;
@@ -12,6 +16,7 @@ export class Tooltip {
   private placement: Placement;
   private container: HTMLElement;
   private cleanup: (() => void) | null = null;
+  private throttledUpdate: () => void;
 
   constructor(
     reference: HTMLElement,
@@ -22,6 +27,7 @@ export class Tooltip {
     this.reference = reference;
     this.placement = placement;
     this.container = options.container || document.body;
+    this.throttledUpdate = throttle(this.update, THROTTLE_INTERVAL);
 
     // Create tooltip element
     this.floating = document.createElement("div");
@@ -86,10 +92,10 @@ export class Tooltip {
       });
     });
 
-    // Setup update loop
+    // Setup update loop with throttling
     let frame: number;
-    const update = () => {
-      this.update();
+    const update = async () => {
+      await this.throttledUpdate();
       frame = requestAnimationFrame(update);
     };
     update();

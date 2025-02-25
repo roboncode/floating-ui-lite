@@ -1,10 +1,29 @@
-import { ComputePositionState, Middleware, Placement } from "../../types";
+import { ComputePositionState, Middleware, Placement, Rect } from "../../types";
 
-import { getViewportDimensions } from "../../utils/dom";
+import { getBoundingClientRect } from "../../utils/dom";
 
 export interface FlipOptions {
   padding?: number;
-  fallbackPlacements?: Placement[];
+}
+
+interface Boundaries {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+interface Space {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+interface PlacementSpace {
+  placement: Placement;
+  space: Space;
+  availableSpace: number;
 }
 
 const opposites: Record<string, string> = {
@@ -15,197 +34,197 @@ const opposites: Record<string, string> = {
 };
 
 /**
+ * Gets the viewport boundaries
+ */
+function getViewportBoundaries(): Boundaries {
+  return {
+    top: 0,
+    right: window.innerWidth,
+    bottom: window.innerHeight,
+    left: 0,
+  };
+}
+
+/**
+ * Gets the container boundaries in viewport coordinates
+ */
+function getContainerBoundaries(container: HTMLElement): Boundaries {
+  if (container === document.body) {
+    return getViewportBoundaries();
+  }
+
+  const rect = getBoundingClientRect(container);
+  return {
+    top: rect.y,
+    right: rect.x + rect.width,
+    bottom: rect.y + rect.height,
+    left: rect.x,
+  };
+}
+
+/**
+ * Creates a virtual rect for the floating element at a given position
+ */
+function createVirtualRect(x: number, y: number, floating: Rect): Rect {
+  return {
+    x,
+    y,
+    width: floating.width,
+    height: floating.height,
+  };
+}
+
+/**
+ * Calculates the available space between an element and boundaries
+ */
+function calculateAvailableSpace(
+  elementRect: Rect,
+  boundaries: Boundaries
+): Space {
+  return {
+    top: elementRect.y - boundaries.top,
+    right: boundaries.right - (elementRect.x + elementRect.width),
+    bottom: boundaries.bottom - (elementRect.y + elementRect.height),
+    left: elementRect.x - boundaries.left,
+  };
+}
+
+/**
+ * Calculates the minimum available space considering both container and viewport
+ */
+function getMinimumSpace(containerSpace: Space, viewportSpace: Space): Space {
+  return {
+    top: Math.min(containerSpace.top, viewportSpace.top),
+    right: Math.min(containerSpace.right, viewportSpace.right),
+    bottom: Math.min(containerSpace.bottom, viewportSpace.bottom),
+    left: Math.min(containerSpace.left, viewportSpace.left),
+  };
+}
+
+/**
+ * Calculates the position and available space for a specific placement
+ */
+function getPlacementSpace(
+  state: ComputePositionState,
+  placement: Placement,
+  containerBoundaries: Boundaries,
+  viewportBoundaries: Boundaries
+): PlacementSpace {
+  const [mainAxis] = placement.split("-");
+  const { floating, reference } = state.rects;
+
+  // Calculate position in viewport coordinates
+  let x = reference.x;
+  let y = reference.y;
+
+  switch (mainAxis) {
+    case "top":
+      y = reference.y - floating.height;
+      break;
+    case "bottom":
+      y = reference.y + reference.height;
+      break;
+    case "left":
+      x = reference.x - floating.width;
+      break;
+    case "right":
+      x = reference.x + reference.width;
+      break;
+  }
+
+  const virtualRect = createVirtualRect(x, y, floating);
+
+  // Calculate space for both container and viewport
+  const containerSpace = calculateAvailableSpace(
+    virtualRect,
+    containerBoundaries
+  );
+  const viewportSpace = calculateAvailableSpace(
+    virtualRect,
+    viewportBoundaries
+  );
+
+  // Use the minimum available space between container and viewport
+  const space = getMinimumSpace(containerSpace, viewportSpace);
+  const availableSpace = space[mainAxis as keyof Space];
+
+  return {
+    placement,
+    space,
+    availableSpace,
+  };
+}
+
+/**
  * Flip middleware that changes placement when there isn't enough space
- * in the current placement direction
  */
 export function flip(options: FlipOptions = {}): Middleware {
   return {
     name: "flip",
     async fn(state: ComputePositionState) {
-      const { placement } = state;
-      const { padding = 5, fallbackPlacements = [] } = options;
+      const { placement, elements } = state;
+      const { padding = 5 } = options;
 
-      // If current placement fits, no need to flip
-      if (fitsInViewport(state, padding)) {
+      // Get both container and viewport boundaries
+      const container = elements.container || document.body;
+      const containerBoundaries = getContainerBoundaries(container);
+      const viewportBoundaries = getViewportBoundaries();
+
+      // Get the main axis and opposite placement
+      const [mainAxis, alignment = ""] = placement.split("-");
+      const oppositePlacement =
+        `${opposites[mainAxis]}${alignment ? `-${alignment}` : ""}` as Placement;
+
+      // Check space for both current and opposite placements
+      const currentSpace = getPlacementSpace(
+        state,
+        placement,
+        containerBoundaries,
+        viewportBoundaries
+      );
+      const oppositeSpace = getPlacementSpace(
+        state,
+        oppositePlacement,
+        containerBoundaries,
+        viewportBoundaries
+      );
+
+      // Debug log
+      console.log("Flip calculation:", {
+        placement,
+        container: container === document.body ? "body" : "custom",
+        containerBoundaries,
+        viewportBoundaries,
+        currentSpace,
+        oppositeSpace,
+        padding,
+      });
+
+      // If current placement has enough space, keep it
+      if (currentSpace.availableSpace >= padding) {
         return {};
       }
 
-      // Try opposite placement first
-      const [mainAxis, crossAxis = ""] = placement.split("-");
-      const oppositePlacement =
-        `${opposites[mainAxis]}${crossAxis ? "-" + crossAxis : ""}` as Placement;
-
-      // Calculate position for opposite placement
-      const flippedState = computeFlippedPosition(state, oppositePlacement);
-
-      // Check if opposite placement fits
-      if (fitsInViewport(flippedState, padding)) {
+      // If opposite has more space, use it
+      if (oppositeSpace.availableSpace > currentSpace.availableSpace) {
         return {
-          x: flippedState.x,
-          y: flippedState.y,
           placement: oppositePlacement,
           middlewareData: {
             ...state.middlewareData,
             flip: {
               originalPlacement: placement,
               finalPlacement: oppositePlacement,
+              spaces: {
+                original: currentSpace,
+                opposite: oppositeSpace,
+              },
             },
           },
         };
       }
 
-      // Try fallback placements if provided
-      for (const fallbackPlacement of fallbackPlacements) {
-        const fallbackState = computeFlippedPosition(state, fallbackPlacement);
-        if (fitsInViewport(fallbackState, padding)) {
-          return {
-            x: fallbackState.x,
-            y: fallbackState.y,
-            placement: fallbackPlacement,
-            middlewareData: {
-              ...state.middlewareData,
-              flip: {
-                originalPlacement: placement,
-                finalPlacement: fallbackPlacement,
-              },
-            },
-          };
-        }
-      }
-
-      // If no placement fits, use the one with the most available space
-      const placements = [oppositePlacement, ...fallbackPlacements];
-      let bestPlacement = oppositePlacement;
-      let bestSpace = getAvailableSpace(flippedState);
-
-      for (const testPlacement of placements) {
-        const testState = computeFlippedPosition(state, testPlacement);
-        const space = getAvailableSpace(testState);
-        if (space > bestSpace) {
-          bestSpace = space;
-          bestPlacement = testPlacement;
-        }
-      }
-
-      const finalState = computeFlippedPosition(state, bestPlacement);
-      return {
-        x: finalState.x,
-        y: finalState.y,
-        placement: bestPlacement,
-        middlewareData: {
-          ...state.middlewareData,
-          flip: {
-            originalPlacement: placement,
-            finalPlacement: bestPlacement,
-          },
-        },
-      };
+      // If neither has enough space, keep the original placement
+      return {};
     },
   };
-}
-
-/**
- * Checks if the floating element fits in the viewport with the given placement
- */
-function fitsInViewport(
-  state: ComputePositionState,
-  padding: number = 0
-): boolean {
-  const { x, y, rects } = state;
-  const viewport = getViewportDimensions();
-
-  const floatingWidth = rects.floating.width;
-  const floatingHeight = rects.floating.height;
-
-  return (
-    x >= padding &&
-    y >= padding &&
-    x + floatingWidth <= viewport.width - padding &&
-    y + floatingHeight <= viewport.height - padding
-  );
-}
-
-/**
- * Computes the position for a flipped placement
- */
-function computeFlippedPosition(
-  state: ComputePositionState,
-  newPlacement: Placement
-): ComputePositionState {
-  const { rects } = state;
-  const [mainAxis, crossAxis = "center"] = newPlacement.split("-");
-
-  // Initialize at reference position
-  let x = rects.reference.x;
-  let y = rects.reference.y;
-
-  // Calculate main axis position
-  switch (mainAxis) {
-    case "top":
-      y = rects.reference.y - rects.floating.height;
-      break;
-    case "bottom":
-      y = rects.reference.y + rects.reference.height;
-      break;
-    case "left":
-      x = rects.reference.x - rects.floating.width;
-      break;
-    case "right":
-      x = rects.reference.x + rects.reference.width;
-      break;
-  }
-
-  // Calculate cross axis position
-  switch (crossAxis) {
-    case "start":
-      if (mainAxis === "top" || mainAxis === "bottom") {
-        x = rects.reference.x;
-      } else {
-        y = rects.reference.y;
-      }
-      break;
-    case "end":
-      if (mainAxis === "top" || mainAxis === "bottom") {
-        x = rects.reference.x + rects.reference.width - rects.floating.width;
-      } else {
-        y = rects.reference.y + rects.reference.height - rects.floating.height;
-      }
-      break;
-    default: // center
-      if (mainAxis === "top" || mainAxis === "bottom") {
-        x =
-          rects.reference.x +
-          (rects.reference.width - rects.floating.width) / 2;
-      } else {
-        y =
-          rects.reference.y +
-          (rects.reference.height - rects.floating.height) / 2;
-      }
-  }
-
-  return {
-    ...state,
-    x,
-    y,
-    placement: newPlacement,
-  };
-}
-
-/**
- * Calculates the available space for a given state
- */
-function getAvailableSpace(state: ComputePositionState): number {
-  const { x, y, rects } = state;
-  const viewport = getViewportDimensions();
-  const floatingWidth = rects.floating.width;
-  const floatingHeight = rects.floating.height;
-
-  // Calculate available space in each direction
-  const top = y;
-  const right = viewport.width - (x + floatingWidth);
-  const bottom = viewport.height - (y + floatingHeight);
-  const left = x;
-
-  // Return the minimum available space
-  return Math.min(top, right, bottom, left);
 }

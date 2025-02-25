@@ -1,10 +1,15 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { flip } from "../middleware/flip";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
+import { throttle } from "../utils/throttle";
 
 // Create middleware array outside class
-const createMiddleware = () => [offset(6), placement()];
+const createMiddleware = () => [placement(), flip(), offset(6)];
+
+// Throttle interval in ms
+const THROTTLE_INTERVAL = 100; // Approximately 60fps
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -15,6 +20,7 @@ export class DropdownMenu {
   private cleanup: (() => void) | null = null;
   private animationFrame: number | null = null;
   private clickHandler: () => void;
+  private throttledUpdate: () => void;
 
   constructor(
     trigger: HTMLElement,
@@ -25,6 +31,7 @@ export class DropdownMenu {
     this.trigger = trigger;
     this.placement = placement;
     this.container = options.container || document.body;
+    this.throttledUpdate = throttle(this.updatePosition, THROTTLE_INTERVAL);
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -141,10 +148,10 @@ export class DropdownMenu {
       });
     });
 
-    // Start update loop
-    const update = () => {
+    // Start update loop with throttling
+    const update = async () => {
       if (!this.isOpen) return;
-      this.updatePosition();
+      await this.throttledUpdate();
       this.animationFrame = requestAnimationFrame(update);
     };
     update();
