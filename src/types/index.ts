@@ -92,6 +92,8 @@ export interface ComputePositionState {
     floating: Rect;
   };
   middlewareData: Record<string, any>;
+  update?: () => void;
+  cleanup?: () => void;
 }
 
 export interface FloatingOptions {

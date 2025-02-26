@@ -1,4 +1,5 @@
 import { ComputePositionState, Middleware, Placement } from "../types";
+import { computePlacementPosition, getViewportDimensions } from "./placement";
 
 interface AutoPlacementOptions {
   allowedPlacements?: Placement[];
@@ -12,18 +13,16 @@ function getAvailableSpace(
   state: ComputePositionState,
   placement: Placement
 ): number {
-  const { x, y, rects } = state;
-  const viewport = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
+  const testPosition = computePlacementPosition(state, placement);
+  const testState = { ...state, ...testPosition };
+  const viewport = getViewportDimensions();
 
   // Calculate space in each direction
   const spaces = {
-    top: y,
-    right: viewport.width - (x + rects.floating.width),
-    bottom: viewport.height - (y + rects.floating.height),
-    left: x,
+    top: testState.y,
+    right: viewport.width - (testState.x + state.rects.floating.width),
+    bottom: viewport.height - (testState.y + state.rects.floating.height),
+    left: testState.x,
   };
 
   // For corner placements, consider both axes
@@ -82,7 +81,9 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
       }
 
       if (bestPlacement !== state.placement) {
+        const newPosition = computePlacementPosition(state, bestPlacement);
         return {
+          ...newPosition,
           placement: bestPlacement,
           middlewareData: {
             ...state.middlewareData,

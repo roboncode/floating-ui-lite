@@ -8,7 +8,7 @@ interface PlacementOptions {
 /**
  * Gets the viewport dimensions
  */
-function getViewportDimensions(): { width: number; height: number } {
+export function getViewportDimensions(): { width: number; height: number } {
   return {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -138,7 +138,7 @@ function getAvailableSpace(state: ComputePositionState): number {
 /**
  * Computes the position based on the placement
  */
-function computePlacementPosition(
+export function computePlacementPosition(
   state: ComputePositionState,
   newPlacement: Placement
 ): { x: number; y: number } {
