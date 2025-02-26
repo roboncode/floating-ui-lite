@@ -4,9 +4,15 @@ import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
+import { shift } from "../middleware/shift";
 
 // Create middleware array outside class
-const createMiddleware = () => [placement(), offset(24), flip()];
+const createMiddleware = () => [
+  placement(),
+  offset(24),
+  shift({ padding: 8, mainAxis: true, crossAxis: false }),
+  flip(),
+];
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -23,7 +29,8 @@ export class DropdownMenu {
     trigger: HTMLElement,
     menuItems: string[],
     placement: Placement = "bottom-start",
-    options: FloatingOptions = {}
+    options: FloatingOptions = {},
+    additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
     this.placement = placement;
@@ -33,6 +40,11 @@ export class DropdownMenu {
     // Create menu element
     this.menu = document.createElement("div");
     this.menu.className = "dropdown-menu";
+
+    // Add any additional classes
+    if (additionalClasses.length > 0) {
+      this.menu.classList.add(...additionalClasses);
+    }
 
     // Create menu items
     menuItems.forEach((item) => {

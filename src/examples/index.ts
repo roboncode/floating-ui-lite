@@ -153,9 +153,10 @@ new PlacementDemo(instances);
 
 // Resize and Layout Shift Testing
 const resizeContainer = getContainer("resize-container1");
+const resizeDropdown1 = document.getElementById("dropdown-resize1")!;
 instances.dropdowns.push(
   new DropdownMenu(
-    document.getElementById("dropdown-resize1")!,
+    resizeDropdown1,
     ["Item 1", "Item 2", "Item 3"],
     "bottom-start",
     {
@@ -164,22 +165,25 @@ instances.dropdowns.push(
       ancestorScroll: true,
       elementResize: true,
       layoutShift: true,
-    }
+    },
+    resizeDropdown1.dataset.dropdownClass?.split(" ") || []
   )
 );
 
 // Element resize testing
 const elementResizeContainer = getContainer("element-resize-container");
+const resizeDropdown2 = document.getElementById("dropdown-resize2")!;
 instances.dropdowns.push(
   new DropdownMenu(
-    document.getElementById("dropdown-resize2")!,
+    resizeDropdown2,
     ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
     "bottom-start",
     {
       // RAF approach - continuous updates
       animationFrame: true,
       container: elementResizeContainer,
-    }
+    },
+    resizeDropdown2.dataset.dropdownClass?.split(" ") || []
   )
 );
 

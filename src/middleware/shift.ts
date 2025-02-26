@@ -1,38 +1,117 @@
 import { ComputePositionState, Middleware } from "../types";
 
+import { getBoundingClientRect } from "../core/getBoundingClientRect";
 import { getViewportDimensions } from "../core/getViewportDimensions";
 
 interface ShiftOptions {
+  mainAxis?: boolean;
+  crossAxis?: boolean;
   padding?: number;
 }
 
 /**
  * Shift middleware that moves the floating element to keep it within viewport bounds
- * while maintaining the same placement
+ * while maintaining the same placement. Supports both main and cross axis shifting.
  */
 export function shift(options: ShiftOptions = {}): Middleware {
   return {
     name: "shift",
     async fn(state: ComputePositionState) {
-      const { x, y, rects } = state;
-      const { padding = 5 } = options;
+      const { x, y, placement, rects, elements } = state;
+      const { mainAxis = true, crossAxis = false, padding = 5 } = options;
 
+      const [basePlacement] = placement.split("-");
+      const isVertical = ["top", "bottom"].includes(basePlacement);
+
+      // Get viewport dimensions
       const viewport = getViewportDimensions();
+
+      // Get container boundaries if container exists
+      let containerRect = {
+        x: 0,
+        y: 0,
+        width: viewport.width,
+        height: viewport.height,
+      };
+      if (elements.container && elements.container instanceof HTMLElement) {
+        containerRect = getBoundingClientRect(elements.container);
+      }
+
       let shiftX = x;
       let shiftY = y;
 
-      // Shift horizontally if needed
-      if (x < padding) {
-        shiftX = padding;
-      } else if (x + rects.floating.width > viewport.width - padding) {
-        shiftX = viewport.width - rects.floating.width - padding;
+      // Handle main axis shifting
+      if (mainAxis) {
+        if (isVertical) {
+          // Vertical placement (top/bottom) - shift horizontally
+          const leftSpace = x - containerRect.x;
+          const rightSpace =
+            containerRect.x + containerRect.width - (x + rects.floating.width);
+
+          if (leftSpace < padding) {
+            shiftX = containerRect.x + padding;
+          } else if (rightSpace < padding) {
+            shiftX =
+              containerRect.x +
+              containerRect.width -
+              rects.floating.width -
+              padding;
+          }
+        } else {
+          // Horizontal placement (left/right) - shift vertically
+          const topSpace = y - containerRect.y;
+          const bottomSpace =
+            containerRect.y +
+            containerRect.height -
+            (y + rects.floating.height);
+
+          if (topSpace < padding) {
+            shiftY = containerRect.y + padding;
+          } else if (bottomSpace < padding) {
+            shiftY =
+              containerRect.y +
+              containerRect.height -
+              rects.floating.height -
+              padding;
+          }
+        }
       }
 
-      // Shift vertically if needed
-      if (y < padding) {
-        shiftY = padding;
-      } else if (y + rects.floating.height > viewport.height - padding) {
-        shiftY = viewport.height - rects.floating.height - padding;
+      // Handle cross axis shifting
+      if (crossAxis) {
+        if (isVertical) {
+          // Vertical placement (top/bottom) - shift vertically
+          const topSpace = y - containerRect.y;
+          const bottomSpace =
+            containerRect.y +
+            containerRect.height -
+            (y + rects.floating.height);
+
+          if (topSpace < padding) {
+            shiftY = containerRect.y + padding;
+          } else if (bottomSpace < padding) {
+            shiftY =
+              containerRect.y +
+              containerRect.height -
+              rects.floating.height -
+              padding;
+          }
+        } else {
+          // Horizontal placement (left/right) - shift horizontally
+          const leftSpace = x - containerRect.x;
+          const rightSpace =
+            containerRect.x + containerRect.width - (x + rects.floating.width);
+
+          if (leftSpace < padding) {
+            shiftX = containerRect.x + padding;
+          } else if (rightSpace < padding) {
+            shiftX =
+              containerRect.x +
+              containerRect.width -
+              rects.floating.width -
+              padding;
+          }
+        }
       }
 
       // Return new coordinates if shifted
