@@ -1,5 +1,5 @@
-import { Placement } from "../index";
 import { DropdownMenu } from "./DropdownMenu";
+import { Placement } from "../index";
 import { Tooltip } from "./Tooltip";
 
 interface Instances {
@@ -10,7 +10,6 @@ interface Instances {
 export class PlacementDemo {
   private container: HTMLElement;
   private currentButton: HTMLElement | null = null;
-  private currentPlacement: Placement = "bottom";
   private instances: Instances;
 
   constructor(instances: Instances) {

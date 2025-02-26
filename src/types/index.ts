@@ -101,6 +101,9 @@ export interface FloatingOptions {
   strategy?: Strategy;
   layoutShift?: boolean;
   elementResize?: boolean;
+  animationFrame?: boolean;
+  ancestorScroll?: boolean;
+  ancestorResize?: boolean;
 }
 
 export interface ComputePositionOptions {

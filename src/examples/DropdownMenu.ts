@@ -145,8 +145,8 @@ export class DropdownMenu {
     console.log("options", this.options);
     // Start position updates
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      layoutShift: this.options.layoutShift ?? false,
-      elementResize: this.options.elementResize ?? false,
+      layoutShift: true,
+      elementResize: false,
       ancestorResize: false,
       ancestorScroll: false,
       animationFrame: false,

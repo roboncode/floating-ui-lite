@@ -158,12 +158,17 @@ instances.dropdowns.push(
     document.getElementById("dropdown-resize1")!,
     ["Item 1", "Item 2", "Item 3"],
     "bottom-start",
-    { container: resizeContainer }
+    {
+      container: resizeContainer,
+      // Event-based approach - explicit listeners
+      ancestorScroll: true,
+      elementResize: true,
+      layoutShift: true,
+    }
   )
 );
 
 // Element resize testing
-const resizableElement = getContainer("resizable-trigger");
 const elementResizeContainer = getContainer("element-resize-container");
 instances.dropdowns.push(
   new DropdownMenu(
@@ -171,8 +176,8 @@ instances.dropdowns.push(
     ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
     "bottom-start",
     {
-      layoutShift: true,
-      elementResize: true,
+      // RAF approach - continuous updates
+      animationFrame: true,
       container: elementResizeContainer,
     }
   )
@@ -180,30 +185,20 @@ instances.dropdowns.push(
 
 // Toggle element size
 document.getElementById("toggle-size")?.addEventListener("click", () => {
-  resizableElement.classList.toggle("expanded");
+  const button = document.getElementById("dropdown-resize2");
+  button?.classList.toggle("expanded");
 });
 
-// Toggle shift
-document.getElementById("toggle-shift")?.addEventListener("click", () => {
+// Toggle adjacent element
+document.getElementById("toggle-adjacent")?.addEventListener("click", () => {
+  const container = document.querySelector(".shift-element") as HTMLElement;
+  if (container) {
+    container.classList.toggle("expanded");
+  }
+});
+
+// Toggle container width
+document.getElementById("toggle-container")?.addEventListener("click", () => {
   const container = getContainer("element-resize-container");
-  const shiftElement = container.querySelector(".shift-element");
-  shiftElement?.classList.toggle("expanded");
-});
-
-// Layout shift testing
-const shiftContainer = getContainer("layout-shift-container");
-instances.dropdowns.push(
-  new DropdownMenu(
-    document.getElementById("dropdown-shift")!,
-    ["Shift Item 1", "Shift Item 2", "Shift Item 3"],
-    "bottom-start",
-    { container: shiftContainer }
-  )
-);
-
-// Trigger layout shift
-document.getElementById("trigger-shift")?.addEventListener("click", () => {
-  const container = getContainer("layout-shift-container");
-  const content = container.querySelector(".shift-content");
-  content?.classList.toggle("expanded");
+  container.classList.toggle("expanded");
 });

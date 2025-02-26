@@ -1,4 +1,6 @@
+import { getParentElements } from "../core/getParentElements";
 import { getScrollParents } from "../core/getScrollParents";
+import { isRootElement } from "../core/isRootElement";
 import { throttle } from "./throttle";
 
 const THROTTLE_INTERVAL = 10;
@@ -19,6 +21,117 @@ const defaultOptions: AutoUpdateOptions = {
   animationFrame: false,
 };
 
+// Get unique elements from multiple arrays
+const getUniqueElements = <T>(arrays: T[][]): T[] => {
+  return [...new Set(arrays.flat())];
+};
+
+// Get unique scroll parents for both reference and floating elements
+const getUniqueScrollParents = (
+  reference: HTMLElement,
+  floating: HTMLElement
+): Element[] => {
+  return getUniqueElements([
+    getScrollParents(reference, document.body),
+    getScrollParents(floating, document.body),
+  ]);
+};
+
+// Get unique ancestors for both reference and floating elements
+const getUniqueAncestors = (
+  reference: HTMLElement,
+  floating: HTMLElement
+): Element[] => {
+  return getUniqueElements([
+    getParentElements(reference),
+    getParentElements(floating),
+  ]).filter((element) => !isRootElement(element));
+};
+
+// Setup scroll event listeners
+const setupScrollListeners = (
+  reference: HTMLElement,
+  floating: HTMLElement,
+  throttledUpdate: () => void
+): (() => void) => {
+  const onScroll = () => throttledUpdate();
+  const scrollParents = getUniqueScrollParents(reference, floating);
+
+  // Add window scroll listener
+  window.addEventListener("scroll", onScroll, {
+    passive: true,
+    capture: true,
+  });
+
+  // Add scrollable ancestors listeners
+  scrollParents.forEach((ancestor) => {
+    ancestor.addEventListener("scroll", onScroll, { passive: true });
+  });
+
+  // Return cleanup function
+  return () => {
+    window.removeEventListener("scroll", onScroll, { capture: true });
+    scrollParents.forEach((ancestor) => {
+      ancestor.removeEventListener("scroll", onScroll);
+    });
+  };
+};
+
+// Setup resize observers
+const setupResizeObserver = (
+  reference: HTMLElement,
+  floating: HTMLElement,
+  throttledUpdate: () => void,
+  options: {
+    ancestorResize?: boolean;
+    elementResize?: boolean;
+  }
+): (() => void) => {
+  const observer = new ResizeObserver(() => throttledUpdate());
+
+  // Observe ancestors if needed
+  if (options.ancestorResize) {
+    observer.observe(document.documentElement);
+    const ancestors = getUniqueAncestors(reference, floating);
+    ancestors.forEach((ancestor) => {
+      observer.observe(ancestor);
+    });
+  }
+
+  // Observe reference and floating if needed
+  if (options.elementResize) {
+    observer.observe(reference);
+    observer.observe(floating);
+  }
+
+  // Return cleanup function
+  return () => observer.disconnect();
+};
+
+// Setup layout shift observer
+const setupLayoutShiftObserver = (
+  reference: HTMLElement,
+  throttledUpdate: () => void
+): (() => void) => {
+  const observer = new MutationObserver(throttledUpdate);
+
+  // Get all ancestor elements up to the root
+  const ancestors = getParentElements(reference);
+
+  // Observe each ancestor for changes that could affect layout
+  ancestors.forEach((ancestor) => {
+    observer.observe(ancestor, {
+      childList: true, // Track child element changes
+      subtree: false, // Don't track deep changes
+      attributes: true, // Track attribute changes
+      attributeFilter: ["class", "style"], // Only care about visual changes
+    });
+  });
+
+  // Return cleanup function
+  return () => observer.disconnect();
+};
+
 export function autoUpdate(
   reference: HTMLElement,
   floating: HTMLElement,
@@ -26,109 +139,51 @@ export function autoUpdate(
   options: AutoUpdateOptions = {}
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
+  console.log("[autoUpdate] Initialized with options:", mergedOptions);
+
   const throttledUpdate = throttle(() => {
-    console.log("[autoUpdate] Update triggered");
+    console.log("[autoUpdate] Running update");
     return update();
   }, THROTTLE_INTERVAL);
-  let resizeObserver: ResizeObserver | null = null;
-  let mutationObserver: MutationObserver | null = null;
+
   const cleanupFns: Array<() => void> = [];
 
-  // Get scrollable ancestors using getScrollParents
-  const referenceScrollParents = getScrollParents(reference, document.body);
-  const floatingScrollParents = getScrollParents(floating, document.body);
-  const scrollParents = [
-    ...new Set([...referenceScrollParents, ...floatingScrollParents]),
-  ];
-
-  // Get all ancestors for resize observation
-  const getAncestors = (element: Element): Element[] => {
-    const ancestors: Element[] = [];
-    let current = element.parentElement;
-    while (current && current !== document.documentElement) {
-      ancestors.push(current);
-      current = current.parentElement;
-    }
-    return ancestors;
-  };
-
-  const referenceAncestors = getAncestors(reference);
-  const floatingAncestors = getAncestors(floating);
-  const ancestors = [...new Set([...referenceAncestors, ...floatingAncestors])];
-
-  // Setup ancestor scroll listeners (only on scrollable ancestors)
-  if (mergedOptions.ancestorScroll) {
-    const onScroll = () => throttledUpdate();
-
-    // Add window scroll listener
-    window.addEventListener("scroll", onScroll, {
-      passive: true,
-      capture: true,
-    });
-
-    // Add scrollable ancestors listeners
-    scrollParents.forEach((ancestor) => {
-      ancestor.addEventListener("scroll", onScroll, { passive: true });
-    });
-
+  if (mergedOptions.animationFrame) {
+    console.log("[autoUpdate] Using requestAnimationFrame mode");
+    let frameId: number;
+    const updateOnFrame = () => {
+      update();
+      frameId = requestAnimationFrame(updateOnFrame);
+    };
+    frameId = requestAnimationFrame(updateOnFrame);
     cleanupFns.push(() => {
-      window.removeEventListener("scroll", onScroll, { capture: true });
-      scrollParents.forEach((ancestor) => {
-        ancestor.removeEventListener("scroll", onScroll);
-      });
+      console.log("[autoUpdate] Cleaning up RAF");
+      cancelAnimationFrame(frameId);
     });
-  }
-
-  // Setup resize observer for both ancestor and element resizes
-  if (mergedOptions.ancestorResize || mergedOptions.elementResize) {
-    const observer = new ResizeObserver(() => throttledUpdate());
-    resizeObserver = observer;
-
-    // Observe ancestors if needed
-    if (mergedOptions.ancestorResize) {
-      observer.observe(document.documentElement);
-      ancestors.forEach((ancestor) => {
-        observer.observe(ancestor);
-      });
+  } else {
+    // Only set up other listeners if not using animationFrame
+    if (mergedOptions.ancestorScroll) {
+      cleanupFns.push(
+        setupScrollListeners(reference, floating, throttledUpdate)
+      );
     }
 
-    // Observe reference and floating if needed
-    if (mergedOptions.elementResize) {
-      observer.observe(reference);
-      observer.observe(floating);
+    if (mergedOptions.ancestorResize || mergedOptions.elementResize) {
+      cleanupFns.push(
+        setupResizeObserver(reference, floating, throttledUpdate, {
+          ancestorResize: mergedOptions.ancestorResize,
+          elementResize: mergedOptions.elementResize,
+        })
+      );
     }
 
-    cleanupFns.push(() => {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-        resizeObserver = null;
-      }
-    });
+    if (mergedOptions.layoutShift) {
+      cleanupFns.push(setupLayoutShiftObserver(reference, throttledUpdate));
+    }
   }
 
-  // Setup layout shift observer using MutationObserver
-  if (mergedOptions.layoutShift) {
-    mutationObserver = new MutationObserver(() => throttledUpdate());
-
-    // Observe the entire document for layout-affecting changes
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["style", "class"],
-      characterData: false,
-    });
-
-    cleanupFns.push(() => {
-      if (mutationObserver) {
-        mutationObserver.disconnect();
-        mutationObserver = null;
-      }
-    });
-  }
-
-  // Return cleanup function that handles all listeners and observers
   return () => {
+    console.log("[autoUpdate] Cleaning up all listeners and observers");
     cleanupFns.forEach((fn) => fn());
   };
 }

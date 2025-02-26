@@ -101,17 +101,31 @@
 
       .button {
         padding: 12px 24px;
-        background: #4a90e2;
+        background: linear-gradient(to bottom, #4a90e2, #357abd);
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
+        font-weight: 500;
         transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .button.expanded {
+        padding: 20px 48px;
+        font-size: 16px;
       }
 
       .button:hover {
-        background: #357abd;
+        background: linear-gradient(to bottom, #357abd, #2b62a8);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .container-label {
@@ -180,6 +194,7 @@
 
       .resizable-element.expanded {
         padding: 30px;
+        width: 200px;
         background-color: #f8f9fa;
       }
 
@@ -234,28 +249,14 @@
         border-color: #d0d0d0;
       }
 
-      .button {
-        padding: 12px 24px;
-        background: linear-gradient(to bottom, #4a90e2, #357abd);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.2s;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      /* Style for expanded dropdown menu */
+      #element-resize-container.expanded .dropdown-menu {
+        min-width: 300px !important;
       }
 
-      .button:hover {
-        background: linear-gradient(to bottom, #357abd, #2b62a8);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      }
-
-      .button:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      #element-resize-container.expanded .dropdown-menu-item {
+        padding: 12px !important;
+        font-size: 16px !important;
       }
 
       .shift-element.expanded {
@@ -455,7 +456,8 @@
       <!-- Element Size Change Example -->
       <div
         class="container"
-        id="element-resize-container">
+        id="element-resize-container"
+        style="transition: width 0.3s ease">
         <span class="container-label">Element Size Changes</span>
         <div class="demo-grid">
           <div
@@ -476,7 +478,8 @@
             </div>
             <div
               class="resizable-element"
-              id="resizable-trigger">
+              id="resizable-trigger"
+              style="transition: all 0.3s ease">
               <button
                 class="button"
                 id="dropdown-resize2">
@@ -488,52 +491,20 @@
             <button
               class="button"
               id="toggle-size">
-              Toggle Size
+              Trigger Size
             </button>
             <button
               class="button"
-              id="toggle-shift"
+              id="toggle-adjacent"
               style="margin-left: 10px">
-              Toggle Shift
+              Adjacent
             </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Layout Shift Example -->
-      <div
-        class="container"
-        id="layout-shift-container">
-        <span class="container-label">Layout Shift Testing</span>
-        <div class="demo-grid layout-shift-grid">
-          <div class="demo-item">
             <button
               class="button"
-              id="dropdown-shift">
-              Watch Me Shift
+              id="toggle-container"
+              style="margin-left: 10px">
+              Container Width
             </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="trigger-shift">
-              Trigger Layout Shift
-            </button>
-          </div>
-        </div>
-        <div class="shift-content">
-          <h3>Dynamic Content</h3>
-          <p>
-            This content will expand and push the buttons above it up through
-            actual DOM layout changes.
-          </p>
-          <div class="demo-grid">
-            <div class="demo-item">
-              <div
-                style="padding: 20px; background: #eef2f7; border-radius: 4px">
-                Additional content that affects layout
-              </div>
-            </div>
           </div>
         </div>
       </div>
