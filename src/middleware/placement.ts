@@ -1,18 +1,11 @@
 import { ComputePositionState, Middleware, Placement } from "../types";
 
+import { computeInitialPosition } from "../core/computePosition";
+import { getViewportDimensions } from "../core/getViewportDimensions";
+
 interface PlacementOptions {
   fallbackPlacements?: Placement[];
   padding?: number;
-}
-
-/**
- * Gets the viewport dimensions
- */
-export function getViewportDimensions(): { width: number; height: number } {
-  return {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
 }
 
 /**
@@ -27,7 +20,11 @@ export function placement(options: PlacementOptions = {}): Middleware {
       const { fallbackPlacements = [], padding = 5 } = options;
 
       // Calculate initial position
-      const initialPosition = computePlacementPosition(state, placement);
+      const initialPosition = computeInitialPosition(
+        state.rects.reference,
+        state.rects.floating,
+        placement
+      );
       const initialState = { ...state, ...initialPosition };
 
       // Check if current placement fits
@@ -37,16 +34,17 @@ export function placement(options: PlacementOptions = {}): Middleware {
 
       // Try fallback placements in order
       for (const fallbackPlacement of fallbackPlacements) {
-        const fallbackState = computePlacementPosition(
-          state,
+        const fallbackPosition = computeInitialPosition(
+          state.rects.reference,
+          state.rects.floating,
           fallbackPlacement
         );
-        const testState = { ...state, ...fallbackState };
+        const testState = { ...state, ...fallbackPosition };
 
         // Check if fallback placement fits
         if (fitsInViewport(testState, padding)) {
           return {
-            ...fallbackState,
+            ...fallbackPosition,
             placement: fallbackPlacement,
             middlewareData: {
               ...state.middlewareData,
@@ -66,7 +64,11 @@ export function placement(options: PlacementOptions = {}): Middleware {
       let bestPosition = initialPosition;
 
       for (const testPlacement of allPlacements) {
-        const testPosition = computePlacementPosition(state, testPlacement);
+        const testPosition = computeInitialPosition(
+          state.rects.reference,
+          state.rects.floating,
+          testPlacement
+        );
         const testState = { ...state, ...testPosition };
         const space = getAvailableSpace(testState);
 
@@ -99,92 +101,32 @@ function fitsInViewport(
   state: ComputePositionState,
   padding: number = 0
 ): boolean {
-  const { x, y, rects } = state;
+  const { x, y } = state;
+  const { floating } = state.rects;
   const viewport = getViewportDimensions();
 
-  // Check if the floating element would be rendered within the viewport bounds
-  const top = y;
-  const right = x + rects.floating.width;
-  const bottom = y + rects.floating.height;
-  const left = x;
-
-  // Check if any part of the floating element would be outside the viewport
-  const isOutsideViewport =
-    left < padding ||
-    top < padding ||
-    right > viewport.width - padding ||
-    bottom > viewport.height - padding;
-
-  return !isOutsideViewport;
+  return (
+    x >= padding &&
+    y >= padding &&
+    x + floating.width <= viewport.width - padding &&
+    y + floating.height <= viewport.height - padding
+  );
 }
 
 /**
  * Calculates the available space for a given state
  */
 function getAvailableSpace(state: ComputePositionState): number {
-  const { x, y, rects } = state;
+  const { x, y } = state;
+  const { floating } = state.rects;
   const viewport = getViewportDimensions();
 
-  // Calculate available space in each direction
+  // Calculate distances to viewport edges
   const top = y;
-  const right = viewport.width - (x + rects.floating.width);
-  const bottom = viewport.height - (y + rects.floating.height);
+  const right = viewport.width - (x + floating.width);
+  const bottom = viewport.height - (y + floating.height);
   const left = x;
 
-  // Return the minimum available space
+  // Return minimum available space
   return Math.min(top, right, bottom, left);
-}
-
-/**
- * Computes the position based on the placement
- */
-export function computePlacementPosition(
-  state: ComputePositionState,
-  newPlacement: Placement
-): { x: number; y: number } {
-  const { rects } = state;
-  const [mainAxis, crossAxis = "center"] = newPlacement.split("-");
-
-  let x = rects.reference.x;
-  let y = rects.reference.y;
-
-  switch (mainAxis) {
-    case "top":
-      y = rects.reference.y - rects.floating.height;
-      break;
-    case "bottom":
-      y = rects.reference.y + rects.reference.height;
-      break;
-    case "left":
-      x = rects.reference.x - rects.floating.width;
-      break;
-    case "right":
-      x = rects.reference.x + rects.reference.width;
-      break;
-  }
-
-  switch (crossAxis) {
-    case "start":
-      // No adjustment needed for start alignment
-      break;
-    case "end":
-      if (mainAxis === "top" || mainAxis === "bottom") {
-        x = rects.reference.x + rects.reference.width - rects.floating.width;
-      } else {
-        y = rects.reference.y + rects.reference.height - rects.floating.height;
-      }
-      break;
-    default: // center
-      if (mainAxis === "top" || mainAxis === "bottom") {
-        x =
-          rects.reference.x +
-          (rects.reference.width - rects.floating.width) / 2;
-      } else {
-        y =
-          rects.reference.y +
-          (rects.reference.height - rects.floating.height) / 2;
-      }
-  }
-
-  return { x, y };
 }

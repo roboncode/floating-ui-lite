@@ -84,16 +84,6 @@ export async function computePosition(
   for (const { fn } of middleware) {
     const response = await fn(state);
     if (response) {
-      // If placement changed, recalculate position
-      if (response.placement && response.placement !== state.placement) {
-        const newPosition = computeInitialPosition(
-          state.rects.reference,
-          state.rects.floating,
-          response.placement
-        );
-        response.x = newPosition.x;
-        response.y = newPosition.y;
-      }
       state = {
         ...state,
         ...response,
@@ -119,7 +109,7 @@ export async function computePosition(
  * Calculates the initial position of the floating element based on its placement preference.
  * This position will be adjusted later for scroll and container context.
  */
-function computeInitialPosition(
+export function computeInitialPosition(
   reference: Rect,
   floating: Rect,
   placement: Placement

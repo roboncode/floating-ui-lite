@@ -1,5 +1,6 @@
 import { ComputePositionState, Middleware, Placement } from "../types";
 
+import { computeInitialPosition } from "../core/computePosition";
 import { getBoundingClientRect } from "../core/getBoundingClientRect";
 
 /**
@@ -9,7 +10,6 @@ import { getBoundingClientRect } from "../core/getBoundingClientRect";
  */
 export interface FlipOptions {
   padding?: number;
-  debug?: boolean;
 }
 
 /**
@@ -180,8 +180,7 @@ function hasEnoughSpace(
   containerBoundaries: Boundaries | null,
   outerBoundaries: Boundaries | null,
   padding: number,
-  viewport: ViewportDimensions,
-  debug?: boolean
+  viewport: ViewportDimensions
 ): boolean {
   const { x, y } = state;
   const floating = state.rects.floating;
@@ -268,17 +267,6 @@ function hasEnoughSpace(
   // Find the most restrictive space available
   const availableSpace = Math.min(...spaces.map((space) => space ?? Infinity));
 
-  // Log debug information if enabled
-  if (debug) {
-    console.log("Space calculation:", {
-      mainAxis,
-      spaces,
-      availableSpace,
-      padding,
-      hasEnough: availableSpace >= padding,
-    });
-  }
-
   return availableSpace >= padding;
 }
 
@@ -336,7 +324,7 @@ export function flip(options: FlipOptions = {}): Middleware {
     name: "flip",
     async fn(state: ComputePositionState) {
       const { placement, elements } = state;
-      const { padding = 5, debug = false } = options;
+      const { padding = 5 } = options;
       const container = elements.container || document.body;
 
       // Extract and cache placement information
@@ -358,8 +346,7 @@ export function flip(options: FlipOptions = {}): Middleware {
         containerBoundaries,
         outerBoundaries,
         padding,
-        viewport,
-        debug
+        viewport
       );
 
       // If current placement doesn't have enough space, try opposite
@@ -368,10 +355,18 @@ export function flip(options: FlipOptions = {}): Middleware {
           alignment ? `-${alignment}` : ""
         }` as Placement;
 
-        // Create test state for opposite placement
+        // Get the offset value from middleware data
+        const offsetValue = state.middlewareData.offset?.value ?? 0;
+
+        // Create test state for opposite placement with offset
         const testState = {
           ...state,
           placement: oppositePlacement,
+          // Adjust test coordinates to include offset
+          ...(opposites[mainAxis] === "top" && { y: state.y - offsetValue }),
+          ...(opposites[mainAxis] === "bottom" && { y: state.y + offsetValue }),
+          ...(opposites[mainAxis] === "left" && { x: state.x - offsetValue }),
+          ...(opposites[mainAxis] === "right" && { x: state.x + offsetValue }),
         };
 
         // Check if opposite placement has enough space
@@ -381,38 +376,32 @@ export function flip(options: FlipOptions = {}): Middleware {
           containerBoundaries,
           outerBoundaries,
           padding,
-          viewport,
-          debug
+          viewport
         );
 
         // If opposite has space, flip to it
         if (oppositeSpace) {
-          if (debug) {
-            console.log("Flipping from", placement, "to", oppositePlacement, {
-              position: { x: state.x, y: state.y },
-              dimensions: state.rects.floating,
-              viewport,
-              container: containerBoundaries
-                ? {
-                    top: containerBoundaries.top,
-                    right: containerBoundaries.right,
-                    bottom: containerBoundaries.bottom,
-                    left: containerBoundaries.left,
-                  }
-                : "body",
-              outerContainer: outerBoundaries
-                ? {
-                    top: outerBoundaries.top,
-                    right: outerBoundaries.right,
-                    bottom: outerBoundaries.bottom,
-                    left: outerBoundaries.left,
-                  }
-                : null,
-            });
-          }
+          // Calculate new base position
+          const { x, y } = computeInitialPosition(
+            state.rects.reference,
+            state.rects.floating,
+            oppositePlacement
+          );
+
+          // Apply offset in the new direction
+          const [oppositeMainAxis] = oppositePlacement.split("-");
+          const adjustedPosition = {
+            x,
+            y,
+            ...(oppositeMainAxis === "top" && { y: y - offsetValue }),
+            ...(oppositeMainAxis === "bottom" && { y: y + offsetValue }),
+            ...(oppositeMainAxis === "left" && { x: x - offsetValue }),
+            ...(oppositeMainAxis === "right" && { x: x + offsetValue }),
+          };
 
           return {
             placement: oppositePlacement,
+            ...adjustedPosition,
           };
         }
       }

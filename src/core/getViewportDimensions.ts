@@ -1,9 +1,10 @@
 /**
- * Gets the viewport dimensions
+ * Gets the viewport dimensions using window.innerWidth/Height
+ * This is more reliable than clientWidth/Height as it includes scrollbars
  */
 export function getViewportDimensions(): { width: number; height: number } {
   return {
-    width: document.documentElement.clientWidth,
-    height: document.documentElement.clientHeight,
+    width: window.innerWidth,
+    height: window.innerHeight,
   };
 }

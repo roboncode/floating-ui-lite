@@ -1,5 +1,7 @@
 import { ComputePositionState, Middleware, Placement } from "../types";
-import { computePlacementPosition, getViewportDimensions } from "./placement";
+
+import { computeInitialPosition } from "../core/computePosition";
+import { getViewportDimensions } from "../core/getViewportDimensions";
 
 interface AutoPlacementOptions {
   allowedPlacements?: Placement[];
@@ -13,28 +15,25 @@ function getAvailableSpace(
   state: ComputePositionState,
   placement: Placement
 ): number {
-  const testPosition = computePlacementPosition(state, placement);
-  const testState = { ...state, ...testPosition };
+  const position = computeInitialPosition(
+    state.rects.reference,
+    state.rects.floating,
+    placement
+  );
+  const testState = { ...state, ...position };
+
+  const { x, y } = testState;
+  const { floating } = state.rects;
   const viewport = getViewportDimensions();
 
-  // Calculate space in each direction
-  const spaces = {
-    top: testState.y,
-    right: viewport.width - (testState.x + state.rects.floating.width),
-    bottom: viewport.height - (testState.y + state.rects.floating.height),
-    left: testState.x,
-  };
+  // Calculate distances to viewport edges
+  const top = y;
+  const right = viewport.width - (x + floating.width);
+  const bottom = viewport.height - (y + floating.height);
+  const left = x;
 
-  // For corner placements, consider both axes
-  const [mainAxis, crossAxis] = placement.split("-");
-  if (crossAxis === "start" || crossAxis === "end") {
-    return Math.min(
-      spaces[mainAxis as keyof typeof spaces],
-      spaces[crossAxis === "start" ? "left" : "right"]
-    );
-  }
-
-  return spaces[mainAxis as keyof typeof spaces];
+  // Return minimum available space
+  return Math.min(top, right, bottom, left);
 }
 
 /**
@@ -81,7 +80,11 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
       }
 
       if (bestPlacement !== state.placement) {
-        const newPosition = computePlacementPosition(state, bestPlacement);
+        const newPosition = computeInitialPosition(
+          state.rects.reference,
+          state.rects.floating,
+          bestPlacement
+        );
         return {
           ...newPosition,
           placement: bestPlacement,
