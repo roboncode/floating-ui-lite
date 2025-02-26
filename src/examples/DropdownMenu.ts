@@ -1,9 +1,9 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
-import { autoUpdate } from "../utils/autoUpdate";
 
 // Create middleware array outside class
 const createMiddleware = () => [placement(), offset(24), flip()];
@@ -143,11 +143,11 @@ export class DropdownMenu {
 
     // Start position updates
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      animationFrame: false,
-      layoutShift: false,
-      ancestorResize: false,
+      layoutShift: true,
+      ancestorResize: true,
       ancestorScroll: true,
-      elementResize: false,
+      elementResize: true,
+      animationFrame: false,
     });
   }
 

@@ -1,7 +1,7 @@
 import { getScrollParents } from "../core/getScrollParents";
 import { throttle } from "./throttle";
 
-const THROTTLE_INTERVAL = 100;
+const THROTTLE_INTERVAL = 10;
 
 interface AutoUpdateOptions {
   ancestorScroll?: boolean;
@@ -12,24 +12,12 @@ interface AutoUpdateOptions {
 }
 
 const defaultOptions: AutoUpdateOptions = {
-  ancestorScroll: true,
-  ancestorResize: true,
-  elementResize: true,
-  layoutShift: true,
+  ancestorScroll: false,
+  ancestorResize: false,
+  elementResize: false,
+  layoutShift: false,
   animationFrame: false,
 };
-
-function getResizeAncestors(element: Element): Element[] {
-  const ancestors: Element[] = [];
-  let current = element.parentElement;
-
-  while (current) {
-    ancestors.push(current);
-    current = current.parentElement;
-  }
-
-  return ancestors;
-}
 
 export function autoUpdate(
   reference: HTMLElement,
@@ -38,7 +26,10 @@ export function autoUpdate(
   options: AutoUpdateOptions = {}
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
-  const throttledUpdate = throttle(update, THROTTLE_INTERVAL);
+  const throttledUpdate = throttle(() => {
+    console.log("[autoUpdate] Update triggered");
+    return update();
+  }, THROTTLE_INTERVAL);
   let animationFrame: number | null = null;
   let resizeObserver: ResizeObserver | null = null;
   let intersectionObserver: IntersectionObserver | null = null;
@@ -51,12 +42,20 @@ export function autoUpdate(
     ...new Set([...referenceScrollParents, ...floatingScrollParents]),
   ];
 
-  // Get all ancestors for resize (we still want all ancestors for resize events)
-  const referenceResizeAncestors = getResizeAncestors(reference);
-  const floatingResizeAncestors = getResizeAncestors(floating);
-  const resizeAncestors = [
-    ...new Set([...referenceResizeAncestors, ...floatingResizeAncestors]),
-  ];
+  // Get all ancestors for resize observation
+  const getAncestors = (element: Element): Element[] => {
+    const ancestors: Element[] = [];
+    let current = element.parentElement;
+    while (current && current !== document.documentElement) {
+      ancestors.push(current);
+      current = current.parentElement;
+    }
+    return ancestors;
+  };
+
+  const referenceAncestors = getAncestors(reference);
+  const floatingAncestors = getAncestors(floating);
+  const ancestors = [...new Set([...referenceAncestors, ...floatingAncestors])];
 
   // Setup ancestor scroll listeners (only on scrollable ancestors)
   if (mergedOptions.ancestorScroll) {
@@ -81,21 +80,29 @@ export function autoUpdate(
     });
   }
 
-  // Setup ancestor resize listeners (on all ancestors)
+  // Setup ancestor resize listeners
   if (mergedOptions.ancestorResize) {
-    const onResize = () => throttledUpdate();
-    resizeAncestors.forEach((ancestor) => {
-      ancestor.addEventListener("resize", onResize, { passive: true });
+    // Use a single observer for all resize events (window + ancestors + elements)
+    const resizeObserver = new ResizeObserver(() => throttledUpdate());
+
+    // Observe all ancestors and the document element for window resizes
+    resizeObserver.observe(document.documentElement);
+    ancestors.forEach((ancestor) => {
+      resizeObserver.observe(ancestor);
     });
+
+    // If elementResize is also enabled, observe the reference and floating elements
+    if (mergedOptions.elementResize) {
+      resizeObserver.observe(reference);
+      resizeObserver.observe(floating);
+    }
+
     cleanupFns.push(() => {
-      resizeAncestors.forEach((ancestor) => {
-        ancestor.removeEventListener("resize", onResize);
-      });
+      resizeObserver.disconnect();
     });
   }
-
-  // Setup element resize observer
-  if (mergedOptions.elementResize) {
+  // Only setup separate element resize observer if ancestorResize is false
+  else if (mergedOptions.elementResize) {
     resizeObserver = new ResizeObserver(() => throttledUpdate());
     resizeObserver.observe(reference);
     resizeObserver.observe(floating);

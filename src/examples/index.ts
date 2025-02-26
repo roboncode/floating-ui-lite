@@ -150,3 +150,46 @@ instances.dropdowns.push(
 
 // Initialize placement demo with all instances
 new PlacementDemo(instances);
+
+// Resize and Layout Shift Testing
+const resizeContainer = getContainer("resize-container1");
+instances.dropdowns.push(
+  new DropdownMenu(
+    document.getElementById("dropdown-resize1")!,
+    ["Item 1", "Item 2", "Item 3"],
+    "bottom-start",
+    { container: resizeContainer }
+  )
+);
+
+// Element resize testing
+const resizableElement = getContainer("resizable-trigger");
+instances.dropdowns.push(
+  new DropdownMenu(
+    document.getElementById("dropdown-resize2")!,
+    ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
+    "bottom-start"
+  )
+);
+
+// Toggle element size
+document.getElementById("toggle-size")?.addEventListener("click", () => {
+  resizableElement.classList.toggle("expanded");
+});
+
+// Layout shift testing
+const shiftContainer = getContainer("layout-shift-container");
+instances.dropdowns.push(
+  new DropdownMenu(
+    document.getElementById("dropdown-shift")!,
+    ["Shift Item 1", "Shift Item 2", "Shift Item 3"],
+    "bottom-start",
+    { container: shiftContainer }
+  )
+);
+
+// Trigger layout shift
+document.getElementById("trigger-shift")?.addEventListener("click", () => {
+  const spacer = shiftContainer.querySelector(".shift-spacer");
+  spacer?.classList.toggle("expanded");
+});

@@ -31,15 +31,32 @@
         border: 2px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
-        margin: 20px 0;
+        margin: 30px 0;
         position: relative;
+      }
+
+      /* Create a wrapper for scroll containers to handle the label properly */
+      .scroll-container-wrapper {
+        position: relative;
+        padding-top: 12px; /* Space for label */
+        margin: 20px 0;
+      }
+
+      .scroll-container-wrapper .container-label {
+        top: 0;
+        font-weight: 500;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        z-index: 2;
       }
 
       .nested-container {
         border: 2px dashed #ccc;
         border-radius: 8px;
         padding: 20px;
-        margin: 20px 0;
+        margin: 30px 0;
         position: relative;
       }
 
@@ -105,6 +122,8 @@
         padding: 0 10px;
         color: #666;
         font-size: 12px;
+        z-index: 1;
+        box-shadow: 0 0 0 2px white;
       }
 
       .demo-grid {
@@ -119,6 +138,103 @@
         border: 1px solid #eee;
         border-radius: 6px;
         text-align: center;
+      }
+
+      .resizable-container {
+        resize: both;
+        overflow: auto;
+        min-width: 200px;
+        min-height: 100px;
+        background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+        transition: background-color 0.2s;
+      }
+
+      .resizable-container:hover {
+        background: linear-gradient(to bottom right, #f8f9fa, #f0f1f2);
+      }
+
+      .resizable-container::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 15px;
+        height: 15px;
+        cursor: se-resize;
+        background: linear-gradient(135deg, transparent 50%, #4a90e2 50%);
+        border-radius: 0 0 4px 0;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+
+      .resizable-container:hover::after {
+        opacity: 1;
+      }
+
+      .resizable-element {
+        padding: 10px;
+        border: 2px dashed #e0e0e0;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+      }
+
+      .resizable-element.expanded {
+        padding: 30px;
+        background-color: #f8f9fa;
+      }
+
+      .layout-shift-grid {
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .shift-spacer {
+        height: 0;
+        transition: height 0.3s ease;
+      }
+
+      .shift-spacer.expanded {
+        height: 100px;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          #f5f5f5,
+          transparent
+        );
+      }
+
+      .container {
+        border: 2px solid #e8e8e8;
+        background: white;
+        transition: border-color 0.2s;
+      }
+
+      .container:hover {
+        border-color: #d0d0d0;
+      }
+
+      .button {
+        padding: 12px 24px;
+        background: linear-gradient(to bottom, #4a90e2, #357abd);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .button:hover {
+        background: linear-gradient(to bottom, #357abd, #2b62a8);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
     </style>
   </head>
@@ -174,76 +290,82 @@
       </div>
 
       <!-- Container 2: Scrollable container -->
-      <div
-        class="scroll-container"
-        id="container2">
+      <div class="scroll-container-wrapper">
         <span class="container-label">Scrollable Container</span>
-        <div class="spacer">Scroll Down ↓</div>
-        <div class="demo-grid">
-          <div class="demo-item">
-            <button
-              class="button"
-              id="tooltip-container2">
-              Hover (Scroll Container)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-container2">
-              Click (Scroll Container)
-            </button>
-          </div>
-        </div>
-        <div class="spacer">Scroll Up ↑</div>
-      </div>
-
-      <!-- Container 3: Nested scrollable containers -->
-      <div
-        class="scroll-container"
-        id="container3">
-        <span class="container-label">Outer Scroll Container</span>
-        <div class="spacer">Outer Scroll ↓</div>
-
         <div
-          class="nested-container scroll-container"
-          id="container3-inner">
-          <span class="container-label">Inner Scroll Container</span>
-          <div class="spacer">Inner Scroll ↓</div>
+          class="scroll-container"
+          id="container2">
+          <div class="spacer">Scroll Down ↓</div>
           <div class="demo-grid">
             <div class="demo-item">
               <button
                 class="button"
-                id="tooltip-container3">
-                Hover (Nested)
+                id="tooltip-container2">
+                Hover (Scroll Container)
               </button>
             </div>
             <div class="demo-item">
               <button
                 class="button"
-                id="dropdown-container3">
-                Click (Nested)
-              </button>
-            </div>
-            <div class="demo-item">
-              <button
-                class="button"
-                id="tooltip-container3-floating">
-                Hover (Nested → Body)
-              </button>
-            </div>
-            <div class="demo-item">
-              <button
-                class="button"
-                id="dropdown-container3-floating">
-                Click (Nested → Body)
+                id="dropdown-container2">
+                Click (Scroll Container)
               </button>
             </div>
           </div>
-          <div class="spacer">Inner Scroll ↑</div>
+          <div class="spacer">Scroll Up ↑</div>
         </div>
+      </div>
 
-        <div class="spacer">Outer Scroll ↑</div>
+      <!-- Container 3: Nested scrollable containers -->
+      <div class="scroll-container-wrapper">
+        <span class="container-label">Outer Scroll Container</span>
+        <div
+          class="scroll-container"
+          id="container3">
+          <div class="spacer">Outer Scroll ↓</div>
+
+          <div class="scroll-container-wrapper">
+            <span class="container-label">Inner Scroll Container</span>
+            <div
+              class="nested-container scroll-container"
+              id="container3-inner">
+              <div class="spacer">Inner Scroll ↓</div>
+              <div class="demo-grid">
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="tooltip-container3">
+                    Hover (Nested)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="dropdown-container3">
+                    Click (Nested)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="tooltip-container3-floating">
+                    Hover (Nested → Body)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="dropdown-container3-floating">
+                    Click (Nested → Body)
+                  </button>
+                </div>
+              </div>
+              <div class="spacer">Inner Scroll ↑</div>
+            </div>
+          </div>
+
+          <div class="spacer">Outer Scroll ↑</div>
+        </div>
       </div>
 
       <!-- Container 4: Mixed container targets -->
@@ -281,6 +403,79 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Resize and Layout Shift Testing -->
+    <div class="section">
+      <h2>Resize & Layout Shift Testing</h2>
+
+      <!-- Resizable Container Example -->
+      <div
+        class="container resizable-container"
+        id="resize-container1">
+        <span class="container-label">Resizable Container</span>
+        <div class="resize-handle"></div>
+        <div class="demo-grid">
+          <div class="demo-item">
+            <button
+              class="button"
+              id="dropdown-resize1">
+              Dropdown in Resizable
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Element Size Change Example -->
+      <div
+        class="container"
+        id="element-resize-container">
+        <span class="container-label">Element Size Changes</span>
+        <div class="demo-grid">
+          <div class="demo-item">
+            <div
+              class="resizable-element"
+              id="resizable-trigger">
+              <button
+                class="button"
+                id="dropdown-resize2">
+                Resizable Trigger
+              </button>
+            </div>
+          </div>
+          <div class="demo-item">
+            <button
+              class="button"
+              id="toggle-size">
+              Toggle Element Size
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout Shift Example -->
+      <div
+        class="container"
+        id="layout-shift-container">
+        <span class="container-label">Layout Shift Testing</span>
+        <div class="demo-grid layout-shift-grid">
+          <div class="demo-item">
+            <button
+              class="button"
+              id="dropdown-shift">
+              Watch Me Shift
+            </button>
+          </div>
+          <div class="demo-item">
+            <button
+              class="button"
+              id="trigger-shift">
+              Trigger Layout Shift
+            </button>
+          </div>
+        </div>
+        <div class="shift-spacer"></div>
       </div>
     </div>
 
