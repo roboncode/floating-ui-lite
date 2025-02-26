@@ -3,13 +3,10 @@ import { FloatingOptions, Placement, computePosition } from "../index";
 import { flip } from "../middleware/flip";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
-import { throttle } from "../utils/throttle";
+import { autoUpdate } from "../utils/autoUpdate";
 
 // Create middleware array outside class
 const createMiddleware = () => [placement(), flip(), offset(6)];
-
-// Throttle interval in ms
-const THROTTLE_INTERVAL = 100; // Approximately 60fps
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -18,9 +15,7 @@ export class DropdownMenu {
   private container: HTMLElement;
   isOpen: boolean = false;
   private cleanup: (() => void) | null = null;
-  private animationFrame: number | null = null;
   private clickHandler: () => void;
-  private throttledUpdate: () => void;
 
   constructor(
     trigger: HTMLElement,
@@ -31,7 +26,6 @@ export class DropdownMenu {
     this.trigger = trigger;
     this.placement = placement;
     this.container = options.container || document.body;
-    this.throttledUpdate = throttle(this.updatePosition, THROTTLE_INTERVAL);
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -120,8 +114,6 @@ export class DropdownMenu {
   }
 
   private updatePosition = async () => {
-    if (!this.isOpen) return;
-
     const { x, y } = await computePosition(this.trigger, this.menu, {
       placement: this.placement,
       strategy: "absolute",
@@ -148,13 +140,8 @@ export class DropdownMenu {
       });
     });
 
-    // Start update loop with throttling
-    const update = async () => {
-      if (!this.isOpen) return;
-      await this.throttledUpdate();
-      this.animationFrame = requestAnimationFrame(update);
-    };
-    update();
+    // Start position updates
+    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition);
   }
 
   hide() {
@@ -163,10 +150,10 @@ export class DropdownMenu {
     this.isOpen = false;
     this.menu.classList.remove("show");
 
-    // Cancel animation frame
-    if (this.animationFrame !== null) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
+    // Stop position updates
+    if (this.cleanup) {
+      this.cleanup();
+      this.cleanup = null;
     }
 
     // Remove menu after transition
@@ -190,7 +177,10 @@ export class DropdownMenu {
 
     // Reset state
     this.isOpen = false;
-    this.animationFrame = null;
+    if (this.cleanup) {
+      this.cleanup();
+      this.cleanup = null;
+    }
   }
 
   updatePlacement(newPlacement: Placement) {
