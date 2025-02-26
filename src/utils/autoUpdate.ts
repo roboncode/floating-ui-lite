@@ -30,9 +30,8 @@ export function autoUpdate(
     console.log("[autoUpdate] Update triggered");
     return update();
   }, THROTTLE_INTERVAL);
-  let animationFrame: number | null = null;
   let resizeObserver: ResizeObserver | null = null;
-  let intersectionObserver: IntersectionObserver | null = null;
+  let mutationObserver: MutationObserver | null = null;
   const cleanupFns: Array<() => void> = [];
 
   // Get scrollable ancestors using getScrollParents
@@ -80,32 +79,25 @@ export function autoUpdate(
     });
   }
 
-  // Setup ancestor resize listeners
-  if (mergedOptions.ancestorResize) {
-    // Use a single observer for all resize events (window + ancestors + elements)
-    const resizeObserver = new ResizeObserver(() => throttledUpdate());
+  // Setup resize observer for both ancestor and element resizes
+  if (mergedOptions.ancestorResize || mergedOptions.elementResize) {
+    const observer = new ResizeObserver(() => throttledUpdate());
+    resizeObserver = observer;
 
-    // Observe all ancestors and the document element for window resizes
-    resizeObserver.observe(document.documentElement);
-    ancestors.forEach((ancestor) => {
-      resizeObserver.observe(ancestor);
-    });
-
-    // If elementResize is also enabled, observe the reference and floating elements
-    if (mergedOptions.elementResize) {
-      resizeObserver.observe(reference);
-      resizeObserver.observe(floating);
+    // Observe ancestors if needed
+    if (mergedOptions.ancestorResize) {
+      observer.observe(document.documentElement);
+      ancestors.forEach((ancestor) => {
+        observer.observe(ancestor);
+      });
     }
 
-    cleanupFns.push(() => {
-      resizeObserver.disconnect();
-    });
-  }
-  // Only setup separate element resize observer if ancestorResize is false
-  else if (mergedOptions.elementResize) {
-    resizeObserver = new ResizeObserver(() => throttledUpdate());
-    resizeObserver.observe(reference);
-    resizeObserver.observe(floating);
+    // Observe reference and floating if needed
+    if (mergedOptions.elementResize) {
+      observer.observe(reference);
+      observer.observe(floating);
+    }
+
     cleanupFns.push(() => {
       if (resizeObserver) {
         resizeObserver.disconnect();
@@ -114,29 +106,23 @@ export function autoUpdate(
     });
   }
 
-  // Setup layout shift observer
+  // Setup layout shift observer using MutationObserver
   if (mergedOptions.layoutShift) {
-    intersectionObserver = new IntersectionObserver(() => throttledUpdate());
-    intersectionObserver.observe(reference);
-    cleanupFns.push(() => {
-      if (intersectionObserver) {
-        intersectionObserver.disconnect();
-        intersectionObserver = null;
-      }
-    });
-  }
+    mutationObserver = new MutationObserver(() => throttledUpdate());
 
-  // Setup animation frame updates
-  if (mergedOptions.animationFrame) {
-    const startLoop = async () => {
-      await throttledUpdate();
-      animationFrame = requestAnimationFrame(startLoop);
-    };
-    startLoop();
+    // Observe the entire document for layout-affecting changes
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style", "class"],
+      characterData: false,
+    });
+
     cleanupFns.push(() => {
-      if (animationFrame !== null) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+        mutationObserver = null;
       }
     });
   }

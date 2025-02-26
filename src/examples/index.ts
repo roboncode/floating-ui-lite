@@ -164,17 +164,30 @@ instances.dropdowns.push(
 
 // Element resize testing
 const resizableElement = getContainer("resizable-trigger");
+const elementResizeContainer = getContainer("element-resize-container");
 instances.dropdowns.push(
   new DropdownMenu(
     document.getElementById("dropdown-resize2")!,
     ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
-    "bottom-start"
+    "bottom-start",
+    {
+      layoutShift: true,
+      elementResize: true,
+      container: elementResizeContainer,
+    }
   )
 );
 
 // Toggle element size
 document.getElementById("toggle-size")?.addEventListener("click", () => {
   resizableElement.classList.toggle("expanded");
+});
+
+// Toggle shift
+document.getElementById("toggle-shift")?.addEventListener("click", () => {
+  const container = getContainer("element-resize-container");
+  const shiftElement = container.querySelector(".shift-element");
+  shiftElement?.classList.toggle("expanded");
 });
 
 // Layout shift testing
@@ -190,6 +203,7 @@ instances.dropdowns.push(
 
 // Trigger layout shift
 document.getElementById("trigger-shift")?.addEventListener("click", () => {
-  const spacer = shiftContainer.querySelector(".shift-spacer");
-  spacer?.classList.toggle("expanded");
+  const container = getContainer("layout-shift-container");
+  const content = container.querySelector(".shift-content");
+  content?.classList.toggle("expanded");
 });

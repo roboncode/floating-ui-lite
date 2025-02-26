@@ -185,22 +185,43 @@
 
       .layout-shift-grid {
         position: relative;
-        transition: all 0.3s ease;
       }
 
       .shift-spacer {
         height: 0;
-        transition: height 0.3s ease;
+        transition:
+          height 0.3s ease,
+          margin 0.3s ease;
+        overflow: hidden;
       }
 
       .shift-spacer.expanded {
         height: 100px;
+        margin: 20px 0;
         background: linear-gradient(
           to bottom,
           transparent,
           #f5f5f5,
           transparent
         );
+      }
+
+      /* Add some content that will push our button down */
+      .shift-content {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin: 0;
+      }
+
+      .shift-content.expanded {
+        max-height: 200px;
+        opacity: 1;
+        margin: 20px 0;
+        padding: 20px;
       }
 
       .container {
@@ -235,6 +256,10 @@
       .button:active {
         transform: translateY(0);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .shift-element.expanded {
+        width: 140px !important;
       }
     </style>
   </head>
@@ -433,7 +458,22 @@
         id="element-resize-container">
         <span class="container-label">Element Size Changes</span>
         <div class="demo-grid">
-          <div class="demo-item">
+          <div
+            class="demo-item"
+            style="display: flex; gap: 20px; justify-content: center">
+            <div
+              class="shift-element"
+              style="width: 0; overflow: hidden; transition: width 0.3s ease">
+              <div
+                style="
+                  width: 100px;
+                  padding: 20px;
+                  background: #eef2f7;
+                  border-radius: 4px;
+                ">
+                Shift Content
+              </div>
+            </div>
             <div
               class="resizable-element"
               id="resizable-trigger">
@@ -448,7 +488,13 @@
             <button
               class="button"
               id="toggle-size">
-              Toggle Element Size
+              Toggle Size
+            </button>
+            <button
+              class="button"
+              id="toggle-shift"
+              style="margin-left: 10px">
+              Toggle Shift
             </button>
           </div>
         </div>
@@ -475,7 +521,21 @@
             </button>
           </div>
         </div>
-        <div class="shift-spacer"></div>
+        <div class="shift-content">
+          <h3>Dynamic Content</h3>
+          <p>
+            This content will expand and push the buttons above it up through
+            actual DOM layout changes.
+          </p>
+          <div class="demo-grid">
+            <div class="demo-item">
+              <div
+                style="padding: 20px; background: #eef2f7; border-radius: 4px">
+                Additional content that affects layout
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

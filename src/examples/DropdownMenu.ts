@@ -13,6 +13,7 @@ export class DropdownMenu {
   private menu: HTMLElement;
   private placement: Placement;
   private container: HTMLElement;
+  private options: FloatingOptions;
   isOpen: boolean = false;
   private cleanup: (() => void) | null = null;
   private clickHandler: () => void;
@@ -26,6 +27,7 @@ export class DropdownMenu {
     this.trigger = trigger;
     this.placement = placement;
     this.container = options.container || document.body;
+    this.options = options;
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -140,13 +142,13 @@ export class DropdownMenu {
         this.menu.classList.add("show");
       });
     });
-
+    console.log("options", this.options);
     // Start position updates
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      layoutShift: true,
-      ancestorResize: true,
-      ancestorScroll: true,
-      elementResize: true,
+      layoutShift: this.options.layoutShift ?? false,
+      elementResize: this.options.elementResize ?? false,
+      ancestorResize: false,
+      ancestorScroll: false,
       animationFrame: false,
     });
   }

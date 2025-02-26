@@ -99,6 +99,8 @@ export interface ComputePositionState {
 export interface FloatingOptions {
   container?: HTMLElement;
   strategy?: Strategy;
+  layoutShift?: boolean;
+  elementResize?: boolean;
 }
 
 export interface ComputePositionOptions {
