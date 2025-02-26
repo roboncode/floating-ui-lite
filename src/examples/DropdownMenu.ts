@@ -14,9 +14,10 @@ export class DropdownMenu {
   private placement: Placement;
   private container: HTMLElement;
   private options: FloatingOptions;
-  isOpen: boolean = false;
   private cleanup: (() => void) | null = null;
   private clickHandler: () => void;
+
+  isOpen: boolean = false;
 
   constructor(
     trigger: HTMLElement,
@@ -145,11 +146,11 @@ export class DropdownMenu {
     console.log("options", this.options);
     // Start position updates
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      layoutShift: true,
-      elementResize: false,
-      ancestorResize: false,
-      ancestorScroll: false,
-      animationFrame: false,
+      // layoutShift: false,
+      // elementResize: false,
+      // ancestorResize: false,
+      // ancestorScroll: false,
+      // animationFrame: false,
     });
   }
 
