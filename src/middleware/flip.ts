@@ -1,6 +1,6 @@
 import { ComputePositionState, Middleware, Placement } from "../types";
 
-import { getBoundingClientRect } from "../utils/dom";
+import { getBoundingClientRect } from "../core/getBoundingClientRect";
 
 /**
  * Configuration options for the flip middleware

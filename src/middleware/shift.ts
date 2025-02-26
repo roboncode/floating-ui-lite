@@ -1,6 +1,6 @@
 import { ComputePositionState, Middleware } from "../types";
 
-import { getViewportDimensions } from "../utils/dom";
+import { getViewportDimensions } from "../core/getViewportDimensions";
 
 interface ShiftOptions {
   padding?: number;

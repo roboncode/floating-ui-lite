@@ -5,48 +5,16 @@ import {
   Rect,
 } from "../types";
 
-import { getBoundingClientRect } from "../utils/dom";
+import { getBoundingClientRect } from "./getBoundingClientRect";
+import { getScrollParents } from "./getScrollParents";
+import { getViewportRect } from "./getViewportRect";
+import { getWindowScroll } from "./getWindowScroll";
 
 const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   placement: "bottom",
   strategy: "absolute",
   container: document.body,
 };
-
-// Cache common values
-const getWindowScroll = () => ({
-  x: window.pageXOffset || document.documentElement.scrollLeft,
-  y: window.pageYOffset || document.documentElement.scrollTop,
-});
-
-const getViewportRect = (): Rect => ({
-  x: 0,
-  y: 0,
-  width: window.innerWidth,
-  height: window.innerHeight,
-});
-
-/**
- * Gets all scrollable parent elements up to the specified container
- */
-function getScrollParents(element: Element, container: HTMLElement): Element[] {
-  const parents: Element[] = [];
-  let parent = element.parentElement;
-
-  // Early return if no parent
-  if (!parent) return parents;
-
-  const containerParent = container.parentElement;
-  while (parent && parent !== containerParent) {
-    const { overflow, overflowX, overflowY } = window.getComputedStyle(parent);
-    if (/(auto|scroll|overlay)/.test(overflow + overflowY + overflowX)) {
-      parents.push(parent);
-    }
-    parent = parent.parentElement;
-  }
-
-  return parents;
-}
 
 /**
  * Computes the position of a floating element relative to its reference element.

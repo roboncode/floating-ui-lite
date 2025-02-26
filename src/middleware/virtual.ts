@@ -1,44 +1,22 @@
 import { ComputePositionState, Middleware } from "../types";
 
-import { getScrollParent } from "../utils/dom";
+import { getScrollParents } from "../core/getScrollParents";
 
 export interface VirtualOptions {
-  ancestorScroll?: boolean;
-  ancestorResize?: boolean;
-  elementResize?: boolean;
+  x?: number;
+  y?: number;
   animationFrame?: boolean;
-}
-
-function getScrollParents(element: Element): Element[] {
-  const scrollParents: Element[] = [];
-  let current = element;
-
-  while (current && current !== document.documentElement) {
-    if (getScrollParent(current) !== document.documentElement) {
-      scrollParents.push(current);
-    }
-    current = current.parentElement as Element;
-  }
-
-  scrollParents.push(document.documentElement);
-  return scrollParents;
 }
 
 function calculateScrollOffset(scrollParents: Element[]): {
   x: number;
   y: number;
 } {
-  return scrollParents.reduce(
-    (offset, parent) => {
-      const isBody = parent === document.body;
-      const scrollLeft = isBody ? window.scrollX : parent.scrollLeft || 0;
-      const scrollTop = isBody ? window.scrollY : parent.scrollTop || 0;
-
-      return {
-        x: offset.x + scrollLeft,
-        y: offset.y + scrollTop,
-      };
-    },
+  return scrollParents.reduce<{ x: number; y: number }>(
+    (offset, parent) => ({
+      x: offset.x + (parent.scrollLeft || 0),
+      y: offset.y + (parent.scrollTop || 0),
+    }),
     { x: 0, y: 0 }
   );
 }
@@ -50,43 +28,19 @@ function calculateScrollOffset(scrollParents: Element[]): {
 export function virtual(options: VirtualOptions = {}): Middleware {
   return {
     name: "virtual",
-    async fn(state: ComputePositionState) {
-      const { ancestorScroll = true } = options;
+    fn: async (state: ComputePositionState) => {
+      const { x = 0, y = 0 } = options;
 
-      if (!ancestorScroll) {
-        return {};
-      }
-
-      const reference = state.elements.reference;
-      if (!reference) {
-        return {};
-      }
-
-      const contextElement =
-        "contextElement" in reference ? reference.contextElement : reference;
-      if (!contextElement || !(contextElement instanceof Element)) {
-        return {};
-      }
-
-      const scrollParents = getScrollParents(contextElement);
+      // Get scroll parents and calculate offset
+      const scrollParents = getScrollParents(
+        state.elements.reference,
+        document.body
+      );
       const scrollOffset = calculateScrollOffset(scrollParents);
 
-      // Mock scroll values for test
-      if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
-        scrollOffset.x = 25;
-        scrollOffset.y = 50;
-      }
-
       return {
-        x: state.x + scrollOffset.x,
-        y: state.y + scrollOffset.y,
-        middlewareData: {
-          ...state.middlewareData,
-          virtual: {
-            scrollOffset,
-            ancestorScroll,
-          },
-        },
+        x: state.x + x + scrollOffset.x,
+        y: state.y + y + scrollOffset.y,
       };
     },
   };

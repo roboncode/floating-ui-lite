@@ -6,7 +6,7 @@ import { placement } from "../middleware/placement";
 import { autoUpdate } from "../utils/autoUpdate";
 
 // Create middleware array outside class
-const createMiddleware = () => [placement(), flip(), offset(6)];
+const createMiddleware = () => [placement(), offset(24), flip()];
 
 export class DropdownMenu {
   private trigger: HTMLElement;
@@ -120,6 +120,7 @@ export class DropdownMenu {
       container: this.container,
       middleware: createMiddleware(),
     });
+    console.log("updatePosition", x, y);
 
     Object.assign(this.menu.style, {
       left: `${x}px`,
@@ -141,7 +142,13 @@ export class DropdownMenu {
     });
 
     // Start position updates
-    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition);
+    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
+      animationFrame: false,
+      layoutShift: false,
+      ancestorResize: false,
+      ancestorScroll: true,
+      elementResize: false,
+    });
   }
 
   hide() {
@@ -156,14 +163,14 @@ export class DropdownMenu {
       this.cleanup = null;
     }
 
-    // Remove menu after transition
-    const onTransitionEnd = () => {
-      if (this.menu.parentNode) {
-        this.menu.parentNode.removeChild(this.menu);
-      }
-      this.menu.removeEventListener("transitionend", onTransitionEnd);
-    };
-    this.menu.addEventListener("transitionend", onTransitionEnd);
+    // // Remove menu after transition
+    // const onTransitionEnd = () => {
+    //   if (this.menu.parentNode) {
+    //     this.menu.parentNode.removeChild(this.menu);
+    //   }
+    //   this.menu.removeEventListener("transitionend", onTransitionEnd);
+    // };
+    // this.menu.addEventListener("transitionend", onTransitionEnd);
   }
 
   destroy() {

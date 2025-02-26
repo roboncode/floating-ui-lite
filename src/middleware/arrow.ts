@@ -1,6 +1,6 @@
 import { ComputePositionState, Middleware } from "../types";
 
-import { getBoundingClientRect } from "../utils/dom";
+import { getBoundingClientRect } from "../core/getBoundingClientRect";
 
 interface ArrowOptions {
   element: HTMLElement;
