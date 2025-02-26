@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { ComputePositionState } from "../types";
 import { arrow } from "../middleware/arrow";
 import { flip } from "../middleware/flip";
 import { placement } from "../middleware/placement";
 import { shift } from "../middleware/shift";
 import { size } from "../middleware/size";
 import { virtual } from "../middleware/virtual";
+import { ComputePositionState } from "../types";
 
 describe("Middleware", () => {
   let reference: HTMLElement;

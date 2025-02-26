@@ -1,6 +1,6 @@
-import { ComputePositionState, Middleware } from '../../types';
+import { ComputePositionState, Middleware } from "../types";
 
-import { getBoundingClientRect } from '../../utils/dom';
+import { getBoundingClientRect } from "../core/getBoundingClientRect";
 
 interface ArrowOptions {
   element: HTMLElement;
@@ -12,14 +12,14 @@ interface ArrowOptions {
  */
 export function arrow(options: ArrowOptions): Middleware {
   return {
-    name: 'arrow',
+    name: "arrow",
     async fn(state: ComputePositionState) {
       const { x, y, placement, rects } = state;
       const { element: arrowElement, padding = 5 } = options;
 
       const arrowRect = getBoundingClientRect(arrowElement);
-      const [mainAxis, crossAxis = 'center'] = placement.split('-');
-      const isVertical = ['top', 'bottom'].includes(mainAxis);
+      const [mainAxis, crossAxis = "center"] = placement.split("-");
+      const isVertical = ["top", "bottom"].includes(mainAxis);
 
       let arrowX = x;
       let arrowY = y;
@@ -27,20 +27,22 @@ export function arrow(options: ArrowOptions): Middleware {
       // Position the arrow along the main axis
       if (isVertical) {
         arrowX = x + (rects.floating.width - arrowRect.width) / 2;
-        arrowY = mainAxis === 'top' ? y + rects.floating.height : y - arrowRect.height;
+        arrowY =
+          mainAxis === "top" ? y + rects.floating.height : y - arrowRect.height;
       } else {
-        arrowX = mainAxis === 'left' ? x + rects.floating.width : x - arrowRect.width;
+        arrowX =
+          mainAxis === "left" ? x + rects.floating.width : x - arrowRect.width;
         arrowY = y + (rects.floating.height - arrowRect.height) / 2;
       }
 
       // Adjust arrow position based on cross axis alignment
-      if (crossAxis === 'start') {
+      if (crossAxis === "start") {
         if (isVertical) {
           arrowX = x + padding;
         } else {
           arrowY = y + padding;
         }
-      } else if (crossAxis === 'end') {
+      } else if (crossAxis === "end") {
         if (isVertical) {
           arrowX = x + rects.floating.width - arrowRect.width - padding;
         } else {
@@ -66,10 +68,10 @@ export function arrow(options: ArrowOptions): Middleware {
             y: arrowY,
             centerOffset: isVertical
               ? arrowX - (x + rects.floating.width / 2)
-              : arrowY - (y + rects.floating.height / 2)
-          }
-        }
+              : arrowY - (y + rects.floating.height / 2),
+          },
+        },
       };
-    }
+    },
   };
-} 
+}
