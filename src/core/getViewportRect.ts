@@ -7,10 +7,5 @@ import { getViewportDimensions } from "./getViewportDimensions";
  */
 export const getViewportRect = (): Rect => {
   const { width, height } = getViewportDimensions();
-  return {
-    x: 0,
-    y: 0,
-    width,
-    height,
-  };
+  return { x: 0, y: 0, width, height };
 };

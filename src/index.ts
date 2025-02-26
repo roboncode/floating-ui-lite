@@ -1,3 +1,5 @@
+import "./styles/app.css";
+
 export { computePosition } from "./core/computePosition";
 export { arrow } from "./middleware/arrow";
 export { autoPlacement } from "./middleware/auto-placement";

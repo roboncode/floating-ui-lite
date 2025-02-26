@@ -1,0 +1,13 @@
+.dropdown-menu {
+  @apply absolute bg-purple-600 rounded-lg min-w-[180px] opacity-0 z-[1000] hidden p-1.5
+    origin-top scale-95
+    shadow-[0_2px_12px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1)];
+}
+
+.dropdown-menu.show {
+  @apply opacity-100 scale-100 block;
+}
+
+.dropdown-menu-item {
+  @apply p-2 cursor-pointer transition-all duration-100 rounded-md text-sm text-white font-semibold antialiased leading-tight hover:bg-purple-700;
+}

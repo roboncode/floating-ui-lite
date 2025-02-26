@@ -39,17 +39,8 @@ export class DropdownMenu {
       const menuItem = document.createElement("div");
       menuItem.className = "dropdown-menu-item";
       menuItem.textContent = item;
-      // menuItem.addEventListener("click", () => {
-      //   // Emit custom event with selected item
-      //   this.trigger.dispatchEvent(
-      //     new CustomEvent("menuselect", { detail: item })
-      //   );
-      // });
       this.menu.appendChild(menuItem);
     });
-
-    // Add styles
-    this.addStyles();
 
     // Setup click handler
     this.clickHandler = () => {
@@ -64,54 +55,6 @@ export class DropdownMenu {
     this.setupEventListeners();
   }
 
-  private addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      .dropdown-menu {
-        position: absolute;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08),
-                    0 0 1px rgba(0, 0, 0, 0.1);
-        min-width: 180px;
-        opacity: 0;
-        transform-origin: top;
-        transform: scale(0.95);
-        transition-property: opacity, transform;
-        transition-duration: 0.2s;
-        transition-timing-function: cubic-bezier(0.2, 0, 0.13, 1);
-        z-index: 1000;
-        display: none;
-        padding: 6px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-
-      .dropdown-menu.show {
-        opacity: 1;
-        transform: scale(1);
-        display: block;
-      }
-
-      .dropdown-menu-item {
-        padding: 8px 12px;
-        cursor: pointer;
-        transition: all 0.1s ease;
-        border-radius: 6px;
-        font-size: 13px;
-        color: #1c1c1e;
-        font-weight: 400;
-        -webkit-font-smoothing: antialiased;
-        line-height: 1.2;
-      }
-
-      .dropdown-menu-item:hover {
-        background-color: rgba(0, 0, 0, 0.04);
-        color: #006FFF;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
   private setupEventListeners() {
     this.trigger.addEventListener("click", this.clickHandler);
   }
@@ -123,7 +66,6 @@ export class DropdownMenu {
       container: this.container,
       middleware: createMiddleware(),
     });
-    console.log("updatePosition", x, y);
 
     Object.assign(this.menu.style, {
       left: `${x}px`,
@@ -143,15 +85,9 @@ export class DropdownMenu {
         this.menu.classList.add("show");
       });
     });
-    console.log("options", this.options);
+
     // Start position updates
-    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      // layoutShift: false,
-      // elementResize: false,
-      // ancestorResize: false,
-      // ancestorScroll: false,
-      // animationFrame: false,
-    });
+    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {});
   }
 
   hide() {
@@ -165,15 +101,6 @@ export class DropdownMenu {
       this.cleanup();
       this.cleanup = null;
     }
-
-    // // Remove menu after transition
-    // const onTransitionEnd = () => {
-    //   if (this.menu.parentNode) {
-    //     this.menu.parentNode.removeChild(this.menu);
-    //   }
-    //   this.menu.removeEventListener("transitionend", onTransitionEnd);
-    // };
-    // this.menu.addEventListener("transitionend", onTransitionEnd);
   }
 
   destroy() {

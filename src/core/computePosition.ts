@@ -156,8 +156,5 @@ export function computeInitialPosition(
       }
   }
 
-  return {
-    x: Math.round(x),
-    y: Math.round(y),
-  };
+  return { x: Math.round(x), y: Math.round(y) };
 }
