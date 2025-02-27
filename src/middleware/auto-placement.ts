@@ -43,6 +43,13 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
   return {
     name: "autoPlacement",
     async fn(state: ComputePositionState) {
+      const { middlewareData } = state;
+
+      // Skip expensive computations if hidden
+      if (middlewareData.hide?.skipComputations) {
+        return {};
+      }
+
       const {
         allowedPlacements = [
           "top",
@@ -61,9 +68,9 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
         padding = 5,
       } = options;
 
-      // If current placement has enough space, keep it
+      // If current placement has enough space and element is visible, keep it
       const currentSpace = getAvailableSpace(state, state.placement);
-      if (currentSpace >= padding) {
+      if (currentSpace >= padding && state.visibilityState?.isWithinViewport) {
         return {};
       }
 

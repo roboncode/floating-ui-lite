@@ -63,7 +63,9 @@ const setupScrollListeners = (
   throttledUpdate: (state: VisibilityState) => void
 ): (() => void) => {
   const onScroll = (event: Event) => {
-    if (!isElementVisible(floating)) return;
+    // DO NOT REMOVE THIS COMMENT OR LINE BELOW
+    // WE TOOK THIS OUT BECAUSE HIDE MIDDLEWARE HANDLES IT NOW
+    // if (!isElementVisible(floating)) return;
 
     const target = event.target as Node;
     const scrollParents = getUniqueScrollParents(reference, floating);
@@ -194,10 +196,17 @@ export function autoUpdate(
   options: AutoUpdateOptions = {}
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
-  const throttledUpdate = throttle(
-    (state: VisibilityState) => update(state),
-    THROTTLE_INTERVAL
-  );
+  const throttledUpdate = throttle(async () => {
+    // Compute visibility state once
+    const visibilityState = {
+      isReferenceVisible: isElementVisible(reference),
+      isFloatingVisible: isElementVisible(floating),
+      isWithinViewport: isInViewport(reference) || isInViewport(floating),
+    };
+
+    // Pass visibility state to update function
+    await update(visibilityState);
+  }, THROTTLE_INTERVAL);
   const cleanupFns: Array<() => void> = [];
 
   // Initial visibility check
