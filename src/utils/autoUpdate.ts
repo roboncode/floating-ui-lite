@@ -15,6 +15,12 @@ interface AutoUpdateOptions {
   animationFrame?: boolean;
 }
 
+interface VisibilityState {
+  isReferenceVisible: boolean;
+  isFloatingVisible: boolean;
+  isWithinViewport: boolean;
+}
+
 const defaultOptions: AutoUpdateOptions = {
   ancestorScroll: true,
   ancestorResize: true,
@@ -54,7 +60,7 @@ const getUniqueAncestors = (
 const setupScrollListeners = (
   reference: HTMLElement,
   floating: HTMLElement,
-  throttledUpdate: () => void
+  throttledUpdate: (state: VisibilityState) => void
 ): (() => void) => {
   const onScroll = (event: Event) => {
     if (!isElementVisible(floating)) return;
@@ -68,10 +74,13 @@ const setupScrollListeners = (
 
     if (!isRelevantScroll) return;
 
-    if (isRootScroll && !isInViewport(reference) && !isInViewport(floating))
-      return;
+    const visibilityState: VisibilityState = {
+      isReferenceVisible: isElementVisible(reference),
+      isFloatingVisible: isElementVisible(floating),
+      isWithinViewport: isInViewport(reference) || isInViewport(floating),
+    };
 
-    throttledUpdate();
+    throttledUpdate(visibilityState);
   };
 
   const scrollParents = getUniqueScrollParents(reference, floating);
@@ -93,13 +102,20 @@ const setupScrollListeners = (
 const setupResizeObserver = (
   reference: HTMLElement,
   floating: HTMLElement,
-  throttledUpdate: () => void,
+  throttledUpdate: (state: VisibilityState) => void,
   options: {
     ancestorResize?: boolean;
     elementResize?: boolean;
   }
 ): (() => void) => {
-  const observer = new ResizeObserver(throttledUpdate);
+  const observer = new ResizeObserver(() => {
+    const visibilityState: VisibilityState = {
+      isReferenceVisible: isElementVisible(reference),
+      isFloatingVisible: isElementVisible(floating),
+      isWithinViewport: isInViewport(reference) || isInViewport(floating),
+    };
+    throttledUpdate(visibilityState);
+  });
 
   if (options.ancestorResize) {
     observer.observe(document.documentElement);
@@ -118,7 +134,8 @@ const setupResizeObserver = (
 // Setup layout shift observer
 const setupLayoutShiftObserver = (
   reference: HTMLElement,
-  throttledUpdate: () => void
+  floating: HTMLElement,
+  throttledUpdate: (state: VisibilityState) => void
 ): (() => void) => {
   const getLayoutBoundary = (element: HTMLElement): HTMLElement => {
     let parent = element.parentElement;
@@ -130,7 +147,14 @@ const setupLayoutShiftObserver = (
   };
 
   const layoutBoundary = getLayoutBoundary(reference);
-  const resizeObserver = new ResizeObserver(throttledUpdate);
+  const resizeObserver = new ResizeObserver(() => {
+    const visibilityState: VisibilityState = {
+      isReferenceVisible: isElementVisible(reference),
+      isFloatingVisible: isElementVisible(floating),
+      isWithinViewport: isInViewport(reference) || isInViewport(floating),
+    };
+    throttledUpdate(visibilityState);
+  });
 
   const mutationObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
@@ -166,17 +190,33 @@ const setupLayoutShiftObserver = (
 export function autoUpdate(
   reference: HTMLElement,
   floating: HTMLElement,
-  update: () => void | Promise<void>,
+  update: (state: VisibilityState) => void | Promise<void>,
   options: AutoUpdateOptions = {}
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
-  const throttledUpdate = throttle(update, THROTTLE_INTERVAL);
+  const throttledUpdate = throttle(
+    (state: VisibilityState) => update(state),
+    THROTTLE_INTERVAL
+  );
   const cleanupFns: Array<() => void> = [];
+
+  // Initial visibility check
+  const initialState: VisibilityState = {
+    isReferenceVisible: isElementVisible(reference),
+    isFloatingVisible: isElementVisible(floating),
+    isWithinViewport: isInViewport(reference) || isInViewport(floating),
+  };
+  update(initialState);
 
   if (mergedOptions.animationFrame) {
     let frameId: number;
     const updateOnFrame = () => {
-      update();
+      const visibilityState: VisibilityState = {
+        isReferenceVisible: isElementVisible(reference),
+        isFloatingVisible: isElementVisible(floating),
+        isWithinViewport: isInViewport(reference) || isInViewport(floating),
+      };
+      update(visibilityState);
       frameId = requestAnimationFrame(updateOnFrame);
     };
     frameId = requestAnimationFrame(updateOnFrame);
@@ -198,7 +238,9 @@ export function autoUpdate(
     }
 
     if (mergedOptions.layoutShift) {
-      cleanupFns.push(setupLayoutShiftObserver(reference, throttledUpdate));
+      cleanupFns.push(
+        setupLayoutShiftObserver(reference, floating, throttledUpdate)
+      );
     }
   }
 

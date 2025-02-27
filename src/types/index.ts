@@ -17,7 +17,12 @@ export type Dimensions = {
 /**
  * Represents the boundaries of an element
  */
-export type Rect = Coords & Dimensions;
+export type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 /**
  * Virtual element interface for non-DOM elements
@@ -34,15 +39,15 @@ export type Placement =
   | "top"
   | "top-start"
   | "top-end"
+  | "right"
+  | "right-start"
+  | "right-end"
   | "bottom"
   | "bottom-start"
   | "bottom-end"
   | "left"
   | "left-start"
-  | "left-end"
-  | "right"
-  | "right-start"
-  | "right-end";
+  | "left-end";
 
 /**
  * Strategy for positioning the floating element
@@ -53,8 +58,9 @@ export type Strategy = "absolute" | "fixed";
  * Core elements involved in the positioning
  */
 export type Elements = {
-  reference: Element | null;
-  floating: HTMLElement | null;
+  reference: HTMLElement;
+  floating: HTMLElement;
+  container?: HTMLElement;
 };
 
 /**
@@ -80,30 +86,32 @@ export type Middleware = {
 export interface ComputePositionState {
   x: number;
   y: number;
-  strategy: Strategy;
   placement: Placement;
-  elements: {
-    reference: Element;
-    floating: HTMLElement;
-    container?: HTMLElement;
-  };
+  strategy: Strategy;
   rects: {
     reference: Rect;
     floating: Rect;
   };
+  elements: Elements;
   middlewareData: Record<string, any>;
+  visibilityState?: VisibilityState;
   update?: () => void;
   cleanup?: () => void;
 }
 
+export interface VisibilityState {
+  isReferenceVisible: boolean;
+  isFloatingVisible: boolean;
+  isWithinViewport: boolean;
+}
+
 export interface FloatingOptions {
   container?: HTMLElement;
-  strategy?: Strategy;
-  layoutShift?: boolean;
-  elementResize?: boolean;
-  animationFrame?: boolean;
   ancestorScroll?: boolean;
   ancestorResize?: boolean;
+  elementResize?: boolean;
+  layoutShift?: boolean;
+  animationFrame?: boolean;
 }
 
 export interface ComputePositionOptions {
@@ -111,4 +119,5 @@ export interface ComputePositionOptions {
   strategy?: Strategy;
   middleware?: Middleware[];
   container?: HTMLElement;
+  visibilityState?: VisibilityState;
 }

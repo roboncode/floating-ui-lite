@@ -14,6 +14,11 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   placement: "bottom",
   strategy: "absolute",
   container: document.body,
+  visibilityState: {
+    isReferenceVisible: false,
+    isFloatingVisible: false,
+    isWithinViewport: false,
+  },
 };
 
 /**
@@ -21,7 +26,7 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
  * Handles different container contexts and scroll scenarios.
  */
 export async function computePosition(
-  reference: Element,
+  reference: HTMLElement,
   floating: HTMLElement,
   options: ComputePositionOptions = {}
 ): Promise<ComputePositionState> {
@@ -30,6 +35,7 @@ export async function computePosition(
     strategy = defaultOptions.strategy,
     container = defaultOptions.container,
     middleware = [],
+    visibilityState,
   } = options;
 
   // Get element rectangles - only calculate what's needed
@@ -55,20 +61,6 @@ export async function computePosition(
     { x: 0, y: 0 }
   );
 
-  // Initialize positioning state
-  let state: ComputePositionState = {
-    x: 0,
-    y: 0,
-    strategy,
-    placement,
-    elements: { reference, floating, container },
-    rects: {
-      reference: referenceRect,
-      floating: floatingRect,
-    },
-    middlewareData: {},
-  };
-
   // Calculate initial position based on placement
   const { x, y } = computeInitialPosition(
     referenceRect,
@@ -76,9 +68,23 @@ export async function computePosition(
     placement
   );
 
-  // Apply initial position
-  state.x = x;
-  state.y = y;
+  let state: ComputePositionState = {
+    x,
+    y,
+    strategy,
+    placement,
+    elements: {
+      reference,
+      floating,
+      container,
+    },
+    rects: {
+      reference: referenceRect,
+      floating: floatingRect,
+    },
+    middlewareData: {},
+    visibilityState,
+  };
 
   // Run middleware
   for (const { fn } of middleware) {

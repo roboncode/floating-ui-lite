@@ -1,4 +1,5 @@
-import { FloatingOptions, Placement, computePosition } from "../index";
+import { Placement, computePosition } from "../index";
+import { Strategy, VisibilityState } from "../types";
 
 import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
@@ -12,6 +13,7 @@ const createMiddleware = () => [
   offset(24),
   shift({ padding: 8, mainAxis: true, crossAxis: false }),
   flip(),
+  // hide({ strategy: "referenceHidden" }),
 ];
 
 export class DropdownMenu {
@@ -19,7 +21,6 @@ export class DropdownMenu {
   private menu: HTMLElement;
   private placement: Placement;
   private container: HTMLElement;
-  private options: FloatingOptions;
   private cleanup: (() => void) | null = null;
   private clickHandler: () => void;
 
@@ -29,13 +30,11 @@ export class DropdownMenu {
     trigger: HTMLElement,
     menuItems: string[],
     placement: Placement = "bottom-start",
-    options: FloatingOptions = {},
     additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
     this.placement = placement;
-    this.container = options.container || document.body;
-    this.options = options;
+    this.container = document.body;
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -71,13 +70,35 @@ export class DropdownMenu {
     this.trigger.addEventListener("click", this.clickHandler);
   }
 
-  private updatePosition = async () => {
-    const { x, y } = await computePosition(this.trigger, this.menu, {
+  private updatePosition = async (visibilityState?: VisibilityState) => {
+    const computeOptions = {
       placement: this.placement,
       strategy: "absolute",
       container: this.container,
       middleware: createMiddleware(),
-    });
+    };
+
+    // Only add visibilityState if it's provided
+    if (visibilityState) {
+      Object.assign(computeOptions, { visibilityState });
+    }
+
+    const { x, y, middlewareData } = await computePosition(
+      this.trigger,
+      this.menu,
+      {
+        ...computeOptions,
+        strategy: computeOptions.strategy as Strategy | undefined,
+      }
+    );
+
+    // Handle hiding based on middleware data
+    const hideData = middlewareData.hide;
+    if (hideData?.isHidden) {
+      this.menu.style.visibility = "hidden";
+    } else {
+      this.menu.style.visibility = "visible";
+    }
 
     Object.assign(this.menu.style, {
       left: `${x}px`,
@@ -91,14 +112,21 @@ export class DropdownMenu {
     this.isOpen = true;
     this.container.appendChild(this.menu);
 
-    // Update position before showing to prevent flash
-    this.updatePosition().then(() => {
+    // Initial visibility check
+    const initialVisibilityState = {
+      isReferenceVisible: true, // We know it's visible because show was called
+      isFloatingVisible: true, // Menu is just being added
+      isWithinViewport: true, // We'll assume it's in viewport initially
+    };
+
+    // Update position with initial visibility state
+    this.updatePosition(initialVisibilityState).then(() => {
       requestAnimationFrame(() => {
         this.menu.classList.add("show");
       });
     });
 
-    // Start position updates
+    // Start position updates with visibility tracking
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {});
   }
 
