@@ -1,3 +1,29 @@
+/**
+ * Efficient auto-update system for floating UI positioning
+ *
+ * This module responds to DOM events affecting floating elements' positioning, using
+ * a throttled update mechanism to prevent performance issues from rapid updates.
+ *
+ * Update Triggers:
+ * - Scroll events
+ * - Resize events
+ * - Layout shifts
+ * - Animation frames (optional)
+ *
+ * Throttling:
+ * A shared throttled update function is used for all triggers except initial and
+ * animation frame updates. This ensures only one update occurs within the throttle
+ * interval (default: 10ms), preventing performance issues from close events.
+ *
+ * Example:
+ * Within a 10ms window, multiple events (scroll, resize, layout shift) trigger a
+ * single update after the window.
+ *
+ * Special Cases:
+ * - Initial update: Immediate without throttling
+ * - Animation frame updates: Uses requestAnimationFrame's timing
+ */
+
 import { AutoUpdateOptions, VisibilityState } from "../types";
 
 import { computeVisibilityState } from "./computeVisibilityState";
