@@ -9,6 +9,7 @@ import { getBoundingClientRect } from "../core/getBoundingClientRect";
  * @property {boolean} debug - Enable debug logging for space calculations
  */
 export interface FlipOptions {
+  fallbackPlacements?: Placement[];
   padding?: number;
 }
 
@@ -322,7 +323,17 @@ function getBoundaries(container: HTMLElement): BoundaryCache {
 export function flip(options: FlipOptions = {}): Middleware {
   return {
     name: "flip",
-    async fn(state: ComputePositionState) {
+    fn: async (state: ComputePositionState) => {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
+
       const { placement, elements } = state;
       const { padding = 5 } = options;
       const container = elements.container || document.body;

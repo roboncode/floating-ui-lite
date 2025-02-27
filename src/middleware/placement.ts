@@ -16,6 +16,16 @@ export function placement(options: PlacementOptions = {}): Middleware {
   return {
     name: "placement",
     async fn(state: ComputePositionState) {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
+
       const { placement } = state;
       const { fallbackPlacements = [], padding = 5 } = options;
 

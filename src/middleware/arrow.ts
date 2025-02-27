@@ -13,11 +13,21 @@ interface ArrowOptions {
 export function arrow(options: ArrowOptions): Middleware {
   return {
     name: "arrow",
-    async fn(state: ComputePositionState) {
-      const { x, y, placement, rects } = state;
-      const { element: arrowElement, padding = 5 } = options;
+    fn: async (state: ComputePositionState) => {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
 
-      const arrowRect = getBoundingClientRect(arrowElement);
+      const { element, padding = 0 } = options;
+      const { x, y, placement, rects } = state;
+
+      const arrowRect = getBoundingClientRect(element);
       const [mainAxis, crossAxis = "center"] = placement.split("-");
       const isVertical = ["top", "bottom"].includes(mainAxis);
 

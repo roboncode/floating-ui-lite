@@ -1,9 +1,19 @@
-import { Middleware } from "../types";
+import { ComputePositionState, Middleware } from "../types";
 
-export function offset(value: number = 0): Middleware {
+export function offset(value = 0): Middleware {
   return {
     name: "offset",
-    async fn(state) {
+    async fn(state: ComputePositionState) {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
+
       const { placement } = state;
       const [mainAxis] = placement.split("-");
 

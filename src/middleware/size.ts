@@ -9,6 +9,7 @@ interface SizeOptions {
   maxWidth?: number;
   maxHeight?: number;
   maintainAspectRatio?: boolean;
+  apply?: (dimensions: { width: number; height: number }) => void;
 }
 
 /**
@@ -19,6 +20,16 @@ export function size(options: SizeOptions = {}): Middleware {
   return {
     name: "size",
     async fn(state: ComputePositionState) {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
+
       const { x, y, rects } = state;
       const {
         padding = 5,

@@ -16,7 +16,17 @@ interface ShiftOptions {
 export function shift(options: ShiftOptions = {}): Middleware {
   return {
     name: "shift",
-    async fn(state: ComputePositionState) {
+    fn: async (state: ComputePositionState) => {
+      // Skip processing if elements are not visible or not in viewport
+      if (
+        state.visibilityState &&
+        (!state.visibilityState.isReferenceVisible ||
+          !state.visibilityState.isFloatingVisible ||
+          !state.visibilityState.isWithinViewport)
+      ) {
+        return {};
+      }
+
       const { x, y, placement, rects, elements } = state;
       const { mainAxis = true, crossAxis = false, padding = 5 } = options;
 
