@@ -105,6 +105,17 @@ export interface VisibilityState {
   isWithinViewport: boolean;
 }
 
+/**
+ * Options for auto-update functionality
+ */
+export interface AutoUpdateOptions {
+  ancestorScroll?: boolean;
+  ancestorResize?: boolean;
+  elementResize?: boolean;
+  layoutShift?: boolean;
+  animationFrame?: boolean;
+}
+
 export interface FloatingOptions {
   container?: HTMLElement;
   ancestorScroll?: boolean;

@@ -1,72 +1,32 @@
-import { getParentElements } from "../core/getParentElements";
-import { getScrollParents } from "../core/getScrollParents";
-import { isElementVisible } from "../core/isElementVisible";
-import { isInViewport } from "../core/isInViewport";
-import { isRootElement } from "../core/isRootElement";
+import { AutoUpdateOptions, VisibilityState } from "../types";
+
+import { computeVisibilityState } from "./computeVisibilityState";
+import { getUniqueAncestors } from "../core/uniqueAncestors";
+import { getUniqueScrollParents } from "../core/uniqueScrollParents";
 import { throttle } from "./throttle";
 
+// Define the interval for throttling updates
+// This interval is used to limit the frequency of updates to prevent excessive computation
 const THROTTLE_INTERVAL = 10;
 
-interface AutoUpdateOptions {
-  ancestorScroll?: boolean;
-  ancestorResize?: boolean;
-  elementResize?: boolean;
-  layoutShift?: boolean;
-  animationFrame?: boolean;
-}
-
-interface VisibilityState {
-  isReferenceVisible: boolean;
-  isFloatingVisible: boolean;
-  isWithinViewport: boolean;
-}
-
+// Default options for auto update
+// These default options ensure that all types of updates are enabled by default
 const defaultOptions: AutoUpdateOptions = {
-  ancestorScroll: true,
-  ancestorResize: true,
-  elementResize: true,
-  layoutShift: true,
-  animationFrame: false,
+  ancestorScroll: true, // Listen for scroll events on ancestors
+  ancestorResize: true, // Listen for resize events on ancestors
+  elementResize: true, // Listen for resize events on the reference and floating elements
+  layoutShift: true, // Listen for layout shifts affecting the reference element
+  animationFrame: false, // Use requestAnimationFrame for updates
 };
 
-// Get unique elements from multiple arrays
-const getUniqueElements = <T>(arrays: T[][]): T[] => {
-  return [...new Set(arrays.flat())];
-};
-
-// Get unique scroll parents for both reference and floating elements
-const getUniqueScrollParents = (
-  reference: HTMLElement,
-  floating: HTMLElement
-): Element[] => {
-  return getUniqueElements([
-    getScrollParents(reference, document.body),
-    getScrollParents(floating, document.body),
-  ]);
-};
-
-// Get unique ancestors for both reference and floating elements
-const getUniqueAncestors = (
-  reference: HTMLElement,
-  floating: HTMLElement
-): Element[] => {
-  return getUniqueElements([
-    getParentElements(reference),
-    getParentElements(floating),
-  ]).filter((element) => !isRootElement(element));
-};
-
-// Setup scroll event listeners
+// Function to setup scroll event listeners
+// This function sets up event listeners for scroll events on the window and unique scroll parents of the reference and floating elements
 const setupScrollListeners = (
   reference: HTMLElement,
   floating: HTMLElement,
   throttledUpdate: (state: VisibilityState) => void
 ): (() => void) => {
   const onScroll = (event: Event) => {
-    // DO NOT REMOVE THIS COMMENT OR LINE BELOW
-    // WE TOOK THIS OUT BECAUSE HIDE MIDDLEWARE HANDLES IT NOW
-    // if (!isElementVisible(floating)) return;
-
     const target = event.target as Node;
     const scrollParents = getUniqueScrollParents(reference, floating);
     const isRootScroll =
@@ -76,22 +36,18 @@ const setupScrollListeners = (
 
     if (!isRelevantScroll) return;
 
-    const visibilityState: VisibilityState = {
-      isReferenceVisible: isElementVisible(reference),
-      isFloatingVisible: isElementVisible(floating),
-      isWithinViewport: isInViewport(reference) || isInViewport(floating),
-    };
-
-    throttledUpdate(visibilityState);
+    throttledUpdate(computeVisibilityState(reference, floating));
   };
 
   const scrollParents = getUniqueScrollParents(reference, floating);
 
+  // Add event listeners for scroll events
   window.addEventListener("scroll", onScroll, { passive: true, capture: true });
   scrollParents.forEach((ancestor) => {
     ancestor.addEventListener("scroll", onScroll, { passive: true });
   });
 
+  // Function to cleanup event listeners
   return () => {
     window.removeEventListener("scroll", onScroll, { capture: true });
     scrollParents.forEach((ancestor) => {
@@ -100,7 +56,8 @@ const setupScrollListeners = (
   };
 };
 
-// Setup resize observers
+// Function to setup resize observers
+// This function sets up ResizeObserver instances to listen for resize events on ancestors and the reference and floating elements
 const setupResizeObserver = (
   reference: HTMLElement,
   floating: HTMLElement,
@@ -111,29 +68,28 @@ const setupResizeObserver = (
   }
 ): (() => void) => {
   const observer = new ResizeObserver(() => {
-    const visibilityState: VisibilityState = {
-      isReferenceVisible: isElementVisible(reference),
-      isFloatingVisible: isElementVisible(floating),
-      isWithinViewport: isInViewport(reference) || isInViewport(floating),
-    };
-    throttledUpdate(visibilityState);
+    throttledUpdate(computeVisibilityState(reference, floating));
   });
 
+  // Observe resize events on ancestors if option is set
   if (options.ancestorResize) {
     observer.observe(document.documentElement);
     const ancestors = getUniqueAncestors(reference, floating);
     ancestors.forEach((ancestor) => observer.observe(ancestor));
   }
 
+  // Observe resize events on the reference and floating elements if option is set
   if (options.elementResize) {
     observer.observe(reference);
     observer.observe(floating);
   }
 
+  // Function to cleanup observer
   return () => observer.disconnect();
 };
 
-// Setup layout shift observer
+// Function to setup layout shift observer
+// This function sets up MutationObserver and ResizeObserver instances to listen for layout shifts affecting the reference element
 const setupLayoutShiftObserver = (
   reference: HTMLElement,
   floating: HTMLElement,
@@ -150,12 +106,7 @@ const setupLayoutShiftObserver = (
 
   const layoutBoundary = getLayoutBoundary(reference);
   const resizeObserver = new ResizeObserver(() => {
-    const visibilityState: VisibilityState = {
-      isReferenceVisible: isElementVisible(reference),
-      isFloatingVisible: isElementVisible(floating),
-      isWithinViewport: isInViewport(reference) || isInViewport(floating),
-    };
-    throttledUpdate(visibilityState);
+    throttledUpdate(computeVisibilityState(reference, floating));
   });
 
   const mutationObserver = new MutationObserver((mutations) => {
@@ -183,12 +134,15 @@ const setupLayoutShiftObserver = (
     resizeObserver.observe(element);
   });
 
+  // Function to cleanup observers
   return () => {
     mutationObserver.disconnect();
     resizeObserver.disconnect();
   };
 };
 
+// Main autoUpdate function
+// This function orchestrates the setup of event listeners and observers for auto-updating the visibility state
 export function autoUpdate(
   reference: HTMLElement,
   floating: HTMLElement,
@@ -197,35 +151,17 @@ export function autoUpdate(
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
   const throttledUpdate = throttle(async () => {
-    // Compute visibility state once
-    const visibilityState = {
-      isReferenceVisible: isElementVisible(reference),
-      isFloatingVisible: isElementVisible(floating),
-      isWithinViewport: isInViewport(reference) || isInViewport(floating),
-    };
-
-    // Pass visibility state to update function
-    await update(visibilityState);
+    await update(computeVisibilityState(reference, floating));
   }, THROTTLE_INTERVAL);
   const cleanupFns: Array<() => void> = [];
 
   // Initial visibility check
-  const initialState: VisibilityState = {
-    isReferenceVisible: isElementVisible(reference),
-    isFloatingVisible: isElementVisible(floating),
-    isWithinViewport: isInViewport(reference) || isInViewport(floating),
-  };
-  update(initialState);
+  update(computeVisibilityState(reference, floating));
 
   if (mergedOptions.animationFrame) {
     let frameId: number;
     const updateOnFrame = () => {
-      const visibilityState: VisibilityState = {
-        isReferenceVisible: isElementVisible(reference),
-        isFloatingVisible: isElementVisible(floating),
-        isWithinViewport: isInViewport(reference) || isInViewport(floating),
-      };
-      update(visibilityState);
+      update(computeVisibilityState(reference, floating));
       frameId = requestAnimationFrame(updateOnFrame);
     };
     frameId = requestAnimationFrame(updateOnFrame);
@@ -253,5 +189,6 @@ export function autoUpdate(
     }
   }
 
+  // Function to cleanup all event listeners and observers
   return () => cleanupFns.forEach((fn) => fn());
 }
