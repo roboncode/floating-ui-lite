@@ -1,19 +1,8 @@
 import { ComputePositionState, Middleware } from "../types";
 
-/**
- * Options for the hide middleware.
- *
- * @param strategy - The strategy to use for hiding the floating element.
- * @param strategy.referenceHidden - Hide the floating element when the reference element is hidden.
- * @param strategy.escaped - Hide the floating element when it is outside the viewport.
- */
 interface HideOptions {
   strategy?: "referenceHidden" | "escaped";
 }
-
-// interface HideData {
-//   isHidden: boolean;
-// }
 
 /**
  * Hide middleware that determines when to hide the floating element based on
@@ -28,6 +17,9 @@ export function hide(options: HideOptions = {}): Middleware {
 
       // Default to visible if no visibility state is available
       if (!visibilityState) {
+        console.log(
+          "🔍 Hide: No visibility state available, defaulting to visible"
+        );
         return {
           middlewareData: {
             ...state.middlewareData,
@@ -43,9 +35,15 @@ export function hide(options: HideOptions = {}): Middleware {
           ? !visibilityState.isReferenceVisible
           : !visibilityState.isWithinViewport;
 
-      console.log(
-        `Hide middleware strategy: ${strategy}, isHidden: ${isHidden}`
-      );
+      console.log("👁️ Hide:", {
+        strategy,
+        isHidden,
+        visibilityState: {
+          isReferenceVisible: visibilityState.isReferenceVisible,
+          isFloatingVisible: visibilityState.isFloatingVisible,
+          isWithinViewport: visibilityState.isWithinViewport,
+        },
+      });
 
       return {
         middlewareData: {

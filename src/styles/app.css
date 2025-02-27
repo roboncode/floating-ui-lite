@@ -12,7 +12,7 @@ body {
 }
 
 .scroll-container {
-  @apply max-h-[300px] overflow-y-auto border-2 border-zinc-800 rounded-lg p-5 my-7 relative bg-zinc-950;
+  @apply max-h-[350px] overflow-y-auto border-2 border-zinc-800 rounded-lg p-5 my-7 relative bg-zinc-950;
 }
 
 /* Create a wrapper for scroll containers to handle the label properly */

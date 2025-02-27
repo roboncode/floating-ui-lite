@@ -1,8 +1,9 @@
-import { Placement, computePosition } from "../index";
-import { Strategy, VisibilityState } from "../types";
+import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { VisibilityState } from "../types";
 import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
+import { hide } from "../middleware/hide";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
 import { shift } from "../middleware/shift";
@@ -13,7 +14,7 @@ const createMiddleware = () => [
   offset(24),
   shift({ padding: 8, mainAxis: true, crossAxis: false }),
   flip(),
-  // hide({ strategy: "referenceHidden" }),
+  hide({ strategy: "escaped" }),
 ];
 
 export class DropdownMenu {
@@ -30,11 +31,12 @@ export class DropdownMenu {
     trigger: HTMLElement,
     menuItems: string[],
     placement: Placement = "bottom-start",
+    options: FloatingOptions = {},
     additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
     this.placement = placement;
-    this.container = document.body;
+    this.container = options.container || document.body;
 
     // Create menu element
     this.menu = document.createElement("div");
@@ -71,24 +73,15 @@ export class DropdownMenu {
   }
 
   private updatePosition = async (visibilityState?: VisibilityState) => {
-    const computeOptions = {
-      placement: this.placement,
-      strategy: "absolute",
-      container: this.container,
-      middleware: createMiddleware(),
-    };
-
-    // Only add visibilityState if it's provided
-    if (visibilityState) {
-      Object.assign(computeOptions, { visibilityState });
-    }
-
     const { x, y, middlewareData } = await computePosition(
       this.trigger,
       this.menu,
       {
-        ...computeOptions,
-        strategy: computeOptions.strategy as Strategy | undefined,
+        placement: this.placement,
+        strategy: "absolute",
+        container: this.container,
+        middleware: createMiddleware(),
+        visibilityState,
       }
     );
 
@@ -112,21 +105,14 @@ export class DropdownMenu {
     this.isOpen = true;
     this.container.appendChild(this.menu);
 
-    // Initial visibility check
-    const initialVisibilityState = {
-      isReferenceVisible: true, // We know it's visible because show was called
-      isFloatingVisible: true, // Menu is just being added
-      isWithinViewport: true, // We'll assume it's in viewport initially
-    };
-
-    // Update position with initial visibility state
-    this.updatePosition(initialVisibilityState).then(() => {
+    // Update position before showing to prevent flash
+    this.updatePosition().then(() => {
       requestAnimationFrame(() => {
         this.menu.classList.add("show");
       });
     });
 
-    // Start position updates with visibility tracking
+    // Start position updates
     this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {});
   }
 

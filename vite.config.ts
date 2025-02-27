@@ -8,6 +8,15 @@ interface VitestConfigExport extends UserConfig {
 }
 
 export default defineConfig({
+  build: {
+    lib: {
+      entry: "./src/index.ts",
+      name: "anchor",
+      fileName: (format) => `anchor.${format}.js`.replace(".iife", ".min"),
+      formats: ["es", "iife", "umd"],
+    },
+    minify: true,
+  },
   test: {
     globals: true,
     environment: "jsdom",
