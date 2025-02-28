@@ -1,5 +1,5 @@
 .dropdown-menu {
-  @apply absolute bg-purple-600 rounded-lg min-w-[180px] invisible z-[1000] p-1.5
+  @apply absolute bg-sky-500 rounded-lg min-w-[180px] invisible z-[1000] p-1.5
     origin-top scale-95
     shadow-[0_2px_12px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1)];
 }
@@ -13,5 +13,5 @@
 }
 
 .dropdown-menu-item {
-  @apply p-2 cursor-pointer rounded-md text-sm text-white font-semibold antialiased leading-tight hover:bg-purple-700;
+  @apply p-2 cursor-pointer rounded-md text-sm text-white font-semibold antialiased leading-tight hover:bg-sky-600;
 }
