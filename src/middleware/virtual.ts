@@ -17,7 +17,7 @@ function calculateScrollOffset(scrollParents: Element[]): {
       x: offset.x + (parent.scrollLeft || 0),
       y: offset.y + (parent.scrollTop || 0),
     }),
-    { x: 0, y: 0 }
+    { x: 0, y: 0 },
   );
 }
 
@@ -34,7 +34,7 @@ export function virtual(options: VirtualOptions = {}): Middleware {
       // Get scroll parents and calculate offset
       const scrollParents = getScrollParents(
         state.elements.reference,
-        document.body
+        document.body,
       );
       const scrollOffset = calculateScrollOffset(scrollParents);
 

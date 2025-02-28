@@ -1,6 +1,6 @@
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
   let inThrottle = false;
   let lastResult: ReturnType<T>;

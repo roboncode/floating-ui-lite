@@ -9,17 +9,19 @@ export { size } from "./middleware/size";
 export { virtual } from "./middleware/virtual";
 export { autoUpdate } from "./utils/autoUpdate";
 
-export type {
-  ComputePositionOptions,
-  ComputePositionState,
-  Coords,
-  Dimensions,
-  Elements,
-  FloatingOptions,
-  Middleware,
-  MiddlewareOptions,
-  Placement,
-  Rect,
-  Strategy,
-  VirtualElement,
-} from "./types";
+export type * from "./types";
+
+// export type {
+//   ComputePositionOptions,
+//   ComputePositionState,
+//   Coords,
+//   Dimensions,
+//   Elements,
+//   FloatingOptions,
+//   Middleware,
+//   MiddlewareOptions,
+//   Placement,
+//   Rect,
+//   Strategy,
+//   VirtualElement,
+// } from "./types";

@@ -5,10 +5,5 @@ import { Rect } from "../types";
  */
 export function getBoundingClientRect(element: Element): Rect {
   const rect = element.getBoundingClientRect();
-  return {
-    width: rect.width,
-    height: rect.height,
-    x: rect.x,
-    y: rect.y,
-  };
+  return { width: rect.width, height: rect.height, x: rect.x, y: rect.y };
 }

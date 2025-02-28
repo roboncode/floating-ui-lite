@@ -22,7 +22,7 @@ export class Tooltip {
     reference: HTMLElement,
     content: string,
     placement: Placement = "top",
-    options: FloatingOptions = {}
+    options: FloatingOptions = {},
   ) {
     this.reference = reference;
     this.placement = placement;
@@ -34,38 +34,9 @@ export class Tooltip {
     this.floating.className = "tooltip";
     this.floating.textContent = content;
 
-    // Add styles
-    this.addStyles();
-
     // Setup event listeners
     this.reference.addEventListener("mouseenter", this.show);
     this.reference.addEventListener("mouseleave", this.hide);
-  }
-
-  private addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      .tooltip {
-        position: absolute;
-        background: #1c1c1e;
-        color: white;
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        pointer-events: none;
-        transition: opacity 0.2s cubic-bezier(0.2, 0, 0.13, 1);
-        opacity: 0;
-        z-index: 1000;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-        max-width: 200px;
-        text-align: center;
-        line-height: 1.4;
-      }
-    `;
-    document.head.appendChild(style);
   }
 
   private update = async () => {

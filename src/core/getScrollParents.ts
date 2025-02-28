@@ -3,7 +3,7 @@
  */
 export function getScrollParents(
   element: Element,
-  container: HTMLElement
+  container: HTMLElement,
 ): Element[] {
   const parents: Element[] = [];
   let parent = element.parentElement;

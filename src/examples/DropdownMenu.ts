@@ -1,59 +1,70 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
+import { VisibilityState } from "../types";
+import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
+import { hide } from "../middleware/hide";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
-import { autoUpdate } from "../utils/autoUpdate";
+import { shift } from "../middleware/shift";
 
 // Create middleware array outside class
-const createMiddleware = () => [placement(), offset(24), flip()];
+const createMiddleware = () => [
+  placement(),
+  offset(24),
+  shift({ padding: 8, mainAxis: true, crossAxis: false }),
+  flip(),
+  hide({ strategy: "referenceHidden" }),
+];
 
 export class DropdownMenu {
   private trigger: HTMLElement;
   private menu: HTMLElement;
   private placement: Placement;
   private container: HTMLElement;
-  isOpen: boolean = false;
   private cleanup: (() => void) | null = null;
   private clickHandler: () => void;
+  private middleware: ReturnType<typeof createMiddleware>;
+
+  // Separate state tracking for DOM presence and visibility
+  private isOpen: boolean = false;
+  private isVisible: boolean = true;
 
   constructor(
     trigger: HTMLElement,
     menuItems: string[],
     placement: Placement = "bottom-start",
-    options: FloatingOptions = {}
+    options: FloatingOptions = {},
+    additionalClasses: string[] = [],
   ) {
     this.trigger = trigger;
     this.placement = placement;
     this.container = options.container || document.body;
+    this.middleware = createMiddleware();
 
     // Create menu element
     this.menu = document.createElement("div");
     this.menu.className = "dropdown-menu";
+
+    // Add any additional classes
+    if (additionalClasses.length > 0) {
+      this.menu.classList.add(...additionalClasses);
+    }
 
     // Create menu items
     menuItems.forEach((item) => {
       const menuItem = document.createElement("div");
       menuItem.className = "dropdown-menu-item";
       menuItem.textContent = item;
-      // menuItem.addEventListener("click", () => {
-      //   // Emit custom event with selected item
-      //   this.trigger.dispatchEvent(
-      //     new CustomEvent("menuselect", { detail: item })
-      //   );
-      // });
       this.menu.appendChild(menuItem);
     });
-
-    // Add styles
-    this.addStyles();
 
     // Setup click handler
     this.clickHandler = () => {
       if (this.isOpen) {
-        this.hide();
+        this.close();
       } else {
-        this.show();
+        this.open();
       }
     };
 
@@ -61,129 +72,132 @@ export class DropdownMenu {
     this.setupEventListeners();
   }
 
-  private addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      .dropdown-menu {
-        position: absolute;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08),
-                    0 0 1px rgba(0, 0, 0, 0.1);
-        min-width: 180px;
-        opacity: 0;
-        transform-origin: top;
-        transform: scale(0.95);
-        transition-property: opacity, transform;
-        transition-duration: 0.2s;
-        transition-timing-function: cubic-bezier(0.2, 0, 0.13, 1);
-        z-index: 1000;
-        display: none;
-        padding: 6px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-
-      .dropdown-menu.show {
-        opacity: 1;
-        transform: scale(1);
-        display: block;
-      }
-
-      .dropdown-menu-item {
-        padding: 8px 12px;
-        cursor: pointer;
-        transition: all 0.1s ease;
-        border-radius: 6px;
-        font-size: 13px;
-        color: #1c1c1e;
-        font-weight: 400;
-        -webkit-font-smoothing: antialiased;
-        line-height: 1.2;
-      }
-
-      .dropdown-menu-item:hover {
-        background-color: rgba(0, 0, 0, 0.04);
-        color: #006FFF;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
   private setupEventListeners() {
     this.trigger.addEventListener("click", this.clickHandler);
   }
 
-  private updatePosition = async () => {
-    const { x, y } = await computePosition(this.trigger, this.menu, {
-      placement: this.placement,
-      strategy: "absolute",
-      container: this.container,
-      middleware: createMiddleware(),
-    });
-    console.log("updatePosition", x, y);
+  /**
+   * Updates the position and handles visibility based on middleware data
+   * Separates DOM state (open/close) from visibility state (show/hide)
+   */
+  private updatePosition = async (visibilityState?: VisibilityState) => {
+    // Only proceed with updates if menu is open
+    if (!this.isOpen) return;
 
-    Object.assign(this.menu.style, {
-      left: `${x}px`,
-      top: `${y}px`,
-    });
+    const { x, y, middlewareData } = await computePosition(
+      this.trigger,
+      this.menu,
+      {
+        placement: this.placement,
+        strategy: "absolute",
+        container: this.container,
+        middleware: this.middleware,
+        visibilityState,
+      },
+    );
+
+    // Handle visibility based on middleware data and visibility state
+    const hideData = middlewareData.hide;
+    // const isHidden =
+    //   hideData.referenceHidden ||
+    //   (hideData.escaped && hideData.strategy === "escaped");
+    const shouldBeVisible =
+      !hideData.referenceHidden ||
+      (!hideData.escaped && hideData.strategy === "escaped");
+
+    // Only update visibility if it changed
+    if (shouldBeVisible !== this.isVisible) {
+      this.isVisible = shouldBeVisible;
+      if (shouldBeVisible) {
+        console.log("🔍 Reference visible, showing menu");
+        this.show();
+      } else {
+        console.log("🚫 Reference hidden, hiding menu");
+        this.hide();
+      }
+    }
+
+    // Update position if menu is in DOM
+    if (this.menu.parentNode) {
+      Object.assign(this.menu.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+      });
+    }
   };
 
-  show() {
+  /**
+   * Opens the menu by adding it to the DOM
+   * Initial visibility state is determined by current isVisible flag
+   */
+  open() {
     if (this.isOpen) return;
 
+    console.log("📂 Opening menu");
     this.isOpen = true;
     this.container.appendChild(this.menu);
 
-    // Update position before showing to prevent flash
-    this.updatePosition().then(() => {
-      requestAnimationFrame(() => {
-        this.menu.classList.add("show");
-      });
-    });
+    // Set initial visibility based on current state
+    if (this.isVisible) {
+      this.show();
+    } else {
+      this.hide();
+    }
 
-    // Start position updates
-    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {
-      animationFrame: false,
-      layoutShift: false,
-      ancestorResize: false,
-      ancestorScroll: true,
-      elementResize: false,
-    });
+    // Update position and start updates
+    this.updatePosition();
+    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {});
   }
 
-  hide() {
+  /**
+   * Closes the menu by removing it from the DOM
+   * Preserves the current visibility state for next open
+   */
+  close() {
     if (!this.isOpen) return;
 
+    console.log("📕 Closing menu");
     this.isOpen = false;
-    this.menu.classList.remove("show");
+
+    // Remove from DOM
+    if (this.menu.parentNode) {
+      this.menu.parentNode.removeChild(this.menu);
+    }
 
     // Stop position updates
     if (this.cleanup) {
       this.cleanup();
       this.cleanup = null;
     }
+  }
 
-    // // Remove menu after transition
-    // const onTransitionEnd = () => {
-    //   if (this.menu.parentNode) {
-    //     this.menu.parentNode.removeChild(this.menu);
-    //   }
-    //   this.menu.removeEventListener("transitionend", onTransitionEnd);
-    // };
-    // this.menu.addEventListener("transitionend", onTransitionEnd);
+  /**
+   * Shows the menu by adding the show class
+   * Only affects visibility, not DOM presence
+   */
+  show() {
+    console.log("👁️ Showing menu");
+    this.menu.style.visibility = "visible";
+    this.menu.style.pointerEvents = "auto";
+  }
+
+  /**
+   * Hides the menu by removing the show class
+   * Only affects visibility, not DOM presence
+   */
+  hide() {
+    console.log("🙈 Hiding menu");
+    this.menu.style.visibility = "hidden";
+    this.menu.style.pointerEvents = "none";
   }
 
   destroy() {
-    this.hide();
+    this.close();
     this.trigger.removeEventListener("click", this.clickHandler);
 
-    // Force cleanup if menu is still in DOM
-    if (this.menu.parentNode) {
-      this.menu.parentNode.removeChild(this.menu);
-    }
-
-    // Reset state
+    // Reset all state
     this.isOpen = false;
+    this.isVisible = true;
     if (this.cleanup) {
       this.cleanup();
       this.cleanup = null;

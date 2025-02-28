@@ -2,6 +2,7 @@ import { ComputePositionState, Middleware, Placement } from "../types";
 
 import { computeInitialPosition } from "../core/computePosition";
 import { getViewportDimensions } from "../core/getViewportDimensions";
+import { shouldSkipMiddleware } from "../utils/shouldSkipMiddleware";
 
 interface PlacementOptions {
   fallbackPlacements?: Placement[];
@@ -16,6 +17,19 @@ export function placement(options: PlacementOptions = {}): Middleware {
   return {
     name: "placement",
     async fn(state: ComputePositionState) {
+      // Skip processing if elements are not visible or not in viewport
+      // if (
+      //   state.visibilityState &&
+      //   (!state.visibilityState.isReferenceVisible ||
+      //     !state.visibilityState.isFloatingVisible ||
+      //     !state.visibilityState.isWithinViewport)
+      // ) {
+      //   return {};
+      // }
+      if (shouldSkipMiddleware(state)) {
+        return {};
+      }
+
       const { placement } = state;
       const { fallbackPlacements = [], padding = 5 } = options;
 
@@ -23,7 +37,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
       const initialPosition = computeInitialPosition(
         state.rects.reference,
         state.rects.floating,
-        placement
+        placement,
       );
       const initialState = { ...state, ...initialPosition };
 
@@ -37,7 +51,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
         const fallbackPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          fallbackPlacement
+          fallbackPlacement,
         );
         const testState = { ...state, ...fallbackPosition };
 
@@ -67,7 +81,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
         const testPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          testPlacement
+          testPlacement,
         );
         const testState = { ...state, ...testPosition };
         const space = getAvailableSpace(testState);
@@ -99,7 +113,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
  */
 function fitsInViewport(
   state: ComputePositionState,
-  padding: number = 0
+  padding: number = 0,
 ): boolean {
   const { x, y } = state;
   const { floating } = state.rects;

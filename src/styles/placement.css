@@ -1,0 +1,43 @@
+.placement-demo {
+  @apply fixed top-4 right-4 rounded-xl bg-zinc-950 z-[1000];
+}
+
+.placement-toggle-button {
+  @apply w-8 h-8 flex items-center justify-center rounded-lg 
+    bg-zinc-950 border-2 border-zinc-800 text-zinc-400 hover:text-zinc-300 
+    transition-colors duration-200 cursor-pointer;
+}
+
+.placement-toggle-button.active {
+  @apply text-purple-500;
+}
+
+.grid-container {
+  @apply absolute top-full right-0 mt-2 p-4 rounded-xl bg-zinc-950 border-2 border-zinc-800
+    flex flex-col gap-2 transition-all duration-200 ease-in-out origin-top-right;
+}
+
+.placement-demo.collapsed .grid-container {
+  @apply invisible opacity-0 scale-95;
+}
+
+.placement-row {
+  @apply flex gap-2;
+}
+
+.placement-button {
+  @apply w-20 h-8 border border-zinc-800 rounded-md bg-zinc-900 cursor-pointer text-xs font-medium 
+    text-zinc-400 transition-all duration-200 px-2 flex items-center justify-center;
+}
+
+.placement-button:hover {
+  @apply bg-zinc-800 border-zinc-700 text-zinc-300;
+}
+
+.placement-button.active {
+  @apply bg-purple-600 text-white border-purple-600;
+}
+
+.placement-button-spacer {
+  @apply w-20 h-8;
+}

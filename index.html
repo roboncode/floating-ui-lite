@@ -5,125 +5,14 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
-    <title>Dropdown Menu Library Demo</title>
-    <style>
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-          Cantarell, sans-serif;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
-      }
-
-      .container {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-        position: relative;
-      }
-
-      .scroll-container {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-        position: relative;
-      }
-
-      .nested-container {
-        border: 2px dashed #ccc;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-        position: relative;
-      }
-
-      .spacer {
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-        font-size: 1.2em;
-        background: linear-gradient(
-          to bottom,
-          transparent,
-          #f5f5f5,
-          transparent
-        );
-      }
-
-      .section {
-        margin-bottom: 40px;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      h1 {
-        color: #333;
-        margin-bottom: 30px;
-        text-align: center;
-      }
-
-      h2 {
-        color: #666;
-        margin-bottom: 20px;
-      }
-
-      h3 {
-        color: #888;
-        margin: 15px 0;
-      }
-
-      .button {
-        padding: 12px 24px;
-        background: #4a90e2;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .button:hover {
-        background: #357abd;
-      }
-
-      .container-label {
-        position: absolute;
-        top: -10px;
-        left: 20px;
-        background: white;
-        padding: 0 10px;
-        color: #666;
-        font-size: 12px;
-      }
-
-      .demo-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
-      }
-
-      .demo-item {
-        padding: 20px;
-        border: 1px solid #eee;
-        border-radius: 6px;
-        text-align: center;
-      }
+    <title>UEF Anchor</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @import "./src/styles/app.css";
     </style>
   </head>
   <body>
-    <h1>Floating UI Components Demo</h1>
+    <h1>UEF Anchor</h1>
 
     <!-- Default (body container) examples -->
     <div class="section">
@@ -174,76 +63,82 @@
       </div>
 
       <!-- Container 2: Scrollable container -->
-      <div
-        class="scroll-container"
-        id="container2">
+      <div class="scroll-container-wrapper">
         <span class="container-label">Scrollable Container</span>
-        <div class="spacer">Scroll Down ↓</div>
-        <div class="demo-grid">
-          <div class="demo-item">
-            <button
-              class="button"
-              id="tooltip-container2">
-              Hover (Scroll Container)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-container2">
-              Click (Scroll Container)
-            </button>
-          </div>
-        </div>
-        <div class="spacer">Scroll Up ↑</div>
-      </div>
-
-      <!-- Container 3: Nested scrollable containers -->
-      <div
-        class="scroll-container"
-        id="container3">
-        <span class="container-label">Outer Scroll Container</span>
-        <div class="spacer">Outer Scroll ↓</div>
-
         <div
-          class="nested-container scroll-container"
-          id="container3-inner">
-          <span class="container-label">Inner Scroll Container</span>
-          <div class="spacer">Inner Scroll ↓</div>
+          class="scroll-container"
+          id="container2">
+          <div class="spacer">Scroll Down ↓</div>
           <div class="demo-grid">
             <div class="demo-item">
               <button
                 class="button"
-                id="tooltip-container3">
-                Hover (Nested)
+                id="tooltip-container2">
+                Hover (Scroll Container)
               </button>
             </div>
             <div class="demo-item">
               <button
                 class="button"
-                id="dropdown-container3">
-                Click (Nested)
-              </button>
-            </div>
-            <div class="demo-item">
-              <button
-                class="button"
-                id="tooltip-container3-floating">
-                Hover (Nested → Body)
-              </button>
-            </div>
-            <div class="demo-item">
-              <button
-                class="button"
-                id="dropdown-container3-floating">
-                Click (Nested → Body)
+                id="dropdown-container2">
+                Click (Scroll Container)
               </button>
             </div>
           </div>
-          <div class="spacer">Inner Scroll ↑</div>
+          <div class="spacer">Scroll Up ↑</div>
         </div>
+      </div>
 
-        <div class="spacer">Outer Scroll ↑</div>
+      <!-- Container 3: Nested scrollable containers -->
+      <div class="scroll-container-wrapper">
+        <span class="container-label">Outer Scroll Container</span>
+        <div
+          class="scroll-container"
+          id="container3">
+          <div class="spacer">Outer Scroll ↓</div>
+
+          <div class="scroll-container-wrapper">
+            <span class="container-label">Inner Scroll Container</span>
+            <div
+              class="nested-container scroll-container"
+              id="container3-inner">
+              <div class="spacer">Inner Scroll ↓</div>
+              <div class="demo-grid">
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="tooltip-container3">
+                    Hover (Nested)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="dropdown-container3">
+                    Click (Nested)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="tooltip-container3-floating">
+                    Hover (Nested → Body)
+                  </button>
+                </div>
+                <div class="demo-item">
+                  <button
+                    class="button"
+                    id="dropdown-container3-floating">
+                    Click (Nested → Body)
+                  </button>
+                </div>
+              </div>
+              <div class="spacer">Inner Scroll ↑</div>
+            </div>
+          </div>
+
+          <div class="spacer">Outer Scroll ↑</div>
+        </div>
       </div>
 
       <!-- Container 4: Mixed container targets -->
@@ -278,6 +173,74 @@
               class="button"
               id="dropdown-mixed2">
               Click (Body → Container)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resize and Layout Shift Testing -->
+    <div class="section">
+      <h2>Resize & Layout Shift Testing</h2>
+
+      <!-- Resizable Container Example -->
+      <div
+        class="container resizable-container"
+        id="resize-container1">
+        <span class="container-label">Resizable Container</span>
+        <div class="resize-handle"></div>
+        <div class="demo-grid">
+          <div class="demo-item">
+            <button
+              class="button"
+              id="dropdown-resize1"
+              data-dropdown-class="wide">
+              Dropdown in Resizable
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Element Size Change Example -->
+      <div
+        class="container transition-all duration-300"
+        id="element-resize-container">
+        <span class="container-label">Element Size Changes</span>
+        <div class="demo-grid">
+          <div class="demo-item flex gap-5 justify-center">
+            <div
+              class="shift-element w-0 overflow-hidden transition-all duration-300">
+              <div
+                class="w-25 h-auto p-5 border border-dashed border-zinc-800 rounded-lg">
+                Shift Content
+              </div>
+            </div>
+            <div
+              class="resizable-element transition-all duration-300"
+              id="resizable-trigger">
+              <button
+                class="button"
+                id="dropdown-resize2"
+                data-dropdown-class="wide">
+                Resizable Trigger
+              </button>
+            </div>
+          </div>
+          <div class="demo-item">
+            <button
+              class="button"
+              id="toggle-size">
+              Trigger Size
+            </button>
+            <button
+              class="button ml-2.5"
+              id="toggle-adjacent">
+              Adjacent
+            </button>
+            <button
+              class="button ml-2.5"
+              id="toggle-container">
+              Container Width
             </button>
           </div>
         </div>

@@ -1,0 +1,131 @@
+@import "tailwindcss";
+@import "./tooltip.css";
+@import "./placement.css";
+@import "./dropdown.css";
+
+body {
+  @apply max-w-7xl mx-auto p-5 leading-relaxed bg-black text-white;
+}
+
+.container {
+  @apply border-2 border-zinc-800 rounded-lg p-5 my-5 relative bg-zinc-950;
+}
+
+.scroll-container {
+  @apply max-h-[350px] overflow-y-auto border-2 border-zinc-800 rounded-lg p-5 my-7 relative bg-zinc-950;
+}
+
+/* Create a wrapper for scroll containers to handle the label properly */
+.scroll-container-wrapper {
+  @apply relative pt-3 my-5;
+}
+
+.scroll-container-wrapper .container-label {
+  @apply top-0 font-medium bg-zinc-950 border border-zinc-800 rounded shadow-sm shadow-zinc-900 z-10;
+}
+
+.nested-container {
+  @apply border-2 border-dashed border-zinc-800 rounded-lg p-5 my-7 relative bg-zinc-950;
+}
+
+.spacer {
+  @apply h-[200px] flex items-center justify-center text-zinc-500 text-lg bg-zinc-900;
+}
+
+.section {
+  @apply mb-10 bg-zinc-950 p-5 rounded-lg shadow-lg shadow-zinc-900/10;
+}
+
+h1 {
+  @apply text-white mb-8 text-center text-3xl font-bold;
+}
+
+h2 {
+  @apply text-zinc-300 mb-5 text-xl font-semibold;
+}
+
+h3 {
+  @apply text-zinc-400 my-4 text-lg font-medium;
+}
+
+.button {
+  @apply px-6 py-3 bg-purple-950 border-1 border-purple-700 hover:bg-purple-700 text-white rounded-lg cursor-pointer text-sm font-medium transition-all shadow-sm shadow-zinc-900/10 hover:shadow-md hover:bg-purple-300 active:shadow-sm;
+}
+
+.button.expanded {
+  @apply px-12 py-5 text-base;
+}
+
+.container-label {
+  @apply absolute border border-dashed border-zinc-800 bg-zinc-950 p-2 px-4 text-zinc-400 text-xs z-10 shadow-[0_0_0_2px] shadow-zinc-950;
+}
+
+.demo-grid {
+  @apply grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5 my-5;
+}
+
+.demo-item {
+  @apply flex flex-wrap items-center justify-center p-5 border border-zinc-800 rounded-lg text-center bg-zinc-950;
+}
+
+.resizable-container {
+  @apply resize overflow-auto min-w-[200px] min-h-[100px] bg-zinc-950 transition-colors duration-200;
+}
+
+.resizable-container:hover {
+  @apply bg-zinc-900;
+}
+
+.resizable-container::after {
+  @apply content-[''] absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-[linear-gradient(135deg,transparent_50%,#zinc-700_50%)] rounded-br opacity-50 transition-opacity duration-200;
+}
+
+.resizable-container:hover::after {
+  @apply opacity-100;
+}
+
+.resizable-element {
+  @apply p-2.5 border-2 border-dashed border-zinc-800 rounded-lg transition-all duration-300;
+}
+
+.resizable-element.expanded {
+  @apply p-7 w-[200px] bg-zinc-900;
+}
+
+.layout-shift-grid {
+  @apply relative;
+}
+
+.shift-spacer {
+  @apply h-0 transition-all duration-300 overflow-hidden;
+}
+
+.shift-spacer.expanded {
+  @apply h-[100px] my-5 bg-zinc-900;
+}
+
+/* Add some content that will push our button down */
+.shift-content {
+  @apply max-h-0 opacity-0 overflow-hidden transition-all duration-300 bg-zinc-900 rounded-lg m-0;
+}
+
+.shift-content.expanded {
+  @apply max-h-[200px] opacity-100 my-5 p-5;
+}
+
+.container:hover {
+  @apply border-zinc-700;
+}
+
+/* Style for expanded dropdown menu */
+#element-resize-container.expanded .dropdown-menu {
+  @apply !min-w-[300px];
+}
+
+#element-resize-container.expanded .dropdown-menu-item {
+  @apply !p-3 !text-base;
+}
+
+.shift-element.expanded {
+  @apply !w-[140px];
+}
