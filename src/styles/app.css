@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "./tooltip.css";
 @import "./placement.css";
-@import "./dropdown.css";
+@import "./menu.css";
 
 body {
   @apply max-w-7xl mx-auto p-5 leading-relaxed bg-black text-white;

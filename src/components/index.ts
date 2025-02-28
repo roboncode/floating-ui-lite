@@ -1,12 +1,12 @@
-import { DropdownMenu } from "./DropdownMenu";
-import { PlacementDemo } from "./PlacementDemo";
-import { Tooltip } from "./Tooltip";
+import { Menu } from "./menu";
+import { PlacementControl } from "./placement";
+import { Tooltip } from "./tooltip";
 
 // Helper function to get container by ID
 const getContainer = (id: string) => document.getElementById(id) as HTMLElement;
 
 // Store all instances for placement control
-const instances: { tooltips: Tooltip[]; dropdowns: DropdownMenu[] } = {
+const instances: { tooltips: Tooltip[]; dropdowns: Menu[] } = {
   tooltips: [],
   dropdowns: [],
 };
@@ -16,16 +16,16 @@ instances.tooltips.push(
   new Tooltip(
     document.getElementById("tooltip-default")!,
     "Default tooltip in document.body",
-    "top",
-  ),
+    "top"
+  )
 );
 
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-default")!,
     ["Profile", "Settings", "Help", "Sign Out"],
-    "bottom-start",
-  ),
+    "bottom-start"
+  )
 );
 
 // Container 1: Simple container
@@ -35,17 +35,17 @@ instances.tooltips.push(
     document.getElementById("tooltip-container1")!,
     "Tooltip in Container 1",
     "top",
-    { container: container1 },
-  ),
+    { container: container1 }
+  )
 );
 
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-container1")!,
     ["Item 1", "Item 2", "Item 3"],
     "bottom-start",
-    { container: container1 },
-  ),
+    { container: container1 }
+  )
 );
 
 // Container 2: Scrollable container
@@ -55,17 +55,17 @@ instances.tooltips.push(
     document.getElementById("tooltip-container2")!,
     "Tooltip in scrollable container",
     "top",
-    { container: container2 },
-  ),
+    { container: container2 }
+  )
 );
 
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-container2")!,
     ["Scroll Item 1", "Scroll Item 2", "Scroll Item 3"],
     "bottom-start",
-    { container: container2 },
-  ),
+    { container: container2 }
+  )
 );
 
 // Container 3: Nested scrollable containers
@@ -77,17 +77,17 @@ instances.tooltips.push(
     document.getElementById("tooltip-container3")!,
     "Tooltip in nested container",
     "top",
-    { container: container3Inner },
-  ),
+    { container: container3Inner }
+  )
 );
 
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-container3")!,
     ["Nested Item 1", "Nested Item 2", "Nested Item 3"],
     "bottom-start",
-    { container: container3Inner },
-  ),
+    { container: container3Inner }
+  )
 );
 
 // Elements that float to document.body from nested container
@@ -95,16 +95,16 @@ instances.tooltips.push(
   new Tooltip(
     document.getElementById("tooltip-container3-floating")!,
     "Tooltip that floats to body from nested container",
-    "top",
-  ),
+    "top"
+  )
 );
 
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-container3-floating")!,
     ["Float Item 1", "Float Item 2", "Float Item 3"],
-    "bottom-start",
-  ),
+    "bottom-start"
+  )
 );
 
 // Container 4: Mixed container targets
@@ -115,8 +115,8 @@ instances.tooltips.push(
   new Tooltip(
     document.getElementById("tooltip-mixed1")!,
     "Tooltip from container to body",
-    "top",
-  ),
+    "top"
+  )
 );
 
 // Tooltip in body, floating element in container
@@ -125,37 +125,37 @@ instances.tooltips.push(
     document.getElementById("tooltip-mixed2")!,
     "Tooltip from body to container",
     "bottom",
-    { container: container4 },
-  ),
+    { container: container4 }
+  )
 );
 
 // Dropdown in container, floating element in body
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-mixed1")!,
     ["Item 1", "Item 2", "Item 3"],
-    "bottom-start",
-  ),
+    "bottom-start"
+  )
 );
 
 // Dropdown in body, floating element in container
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     document.getElementById("dropdown-mixed2")!,
     ["Item A", "Item B", "Item C"],
     "bottom-start",
-    { container: container4 },
-  ),
+    { container: container4 }
+  )
 );
 
 // Initialize placement demo with all instances
-new PlacementDemo(instances);
+new PlacementControl(instances);
 
 // Resize and Layout Shift Testing
 const resizeContainer = getContainer("resize-container1");
 const resizeDropdown1 = document.getElementById("dropdown-resize1")!;
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     resizeDropdown1,
     ["Item 1", "Item 2", "Item 3"],
     "bottom-start",
@@ -166,15 +166,15 @@ instances.dropdowns.push(
       elementResize: true,
       layoutShift: true,
     },
-    resizeDropdown1.dataset.dropdownClass?.split(" ") || [],
-  ),
+    resizeDropdown1.dataset.dropdownClass?.split(" ") || []
+  )
 );
 
 // Element resize testing
 const elementResizeContainer = getContainer("element-resize-container");
 const resizeDropdown2 = document.getElementById("dropdown-resize2")!;
 instances.dropdowns.push(
-  new DropdownMenu(
+  new Menu(
     resizeDropdown2,
     ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
     "bottom-start",
@@ -183,8 +183,8 @@ instances.dropdowns.push(
       animationFrame: true,
       container: elementResizeContainer,
     },
-    resizeDropdown2.dataset.dropdownClass?.split(" ") || [],
-  ),
+    resizeDropdown2.dataset.dropdownClass?.split(" ") || []
+  )
 );
 
 // Toggle element size

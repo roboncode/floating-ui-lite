@@ -1,13 +1,13 @@
-import { DropdownMenu } from "./DropdownMenu";
 import { Placement } from "../index";
-import { Tooltip } from "./Tooltip";
+import { Menu } from "./menu";
+import { Tooltip } from "./tooltip";
 
 interface Instances {
   tooltips: Tooltip[];
-  dropdowns: DropdownMenu[];
+  dropdowns: Menu[];
 }
 
-export class PlacementDemo {
+export class PlacementControl {
   private container: HTMLElement;
   private currentButton: HTMLElement | null = null;
   private instances: Instances;
@@ -114,10 +114,10 @@ export class PlacementDemo {
     this.currentButton = button;
 
     this.instances.tooltips.forEach((tooltip) =>
-      tooltip.updatePlacement(placement),
+      tooltip.updatePlacement(placement)
     );
     this.instances.dropdowns.forEach((dropdown) =>
-      dropdown.updatePlacement(placement),
+      dropdown.updatePlacement(placement)
     );
   }
 

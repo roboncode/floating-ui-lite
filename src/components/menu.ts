@@ -1,12 +1,12 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
-import { VisibilityState } from "../types";
-import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
 import { hide } from "../middleware/hide";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
 import { shift } from "../middleware/shift";
+import { VisibilityState } from "../types";
+import { autoUpdate } from "../utils/autoUpdate";
 
 // Create middleware array outside class
 const createMiddleware = () => [
@@ -17,7 +17,7 @@ const createMiddleware = () => [
   hide({ strategy: "referenceHidden" }),
 ];
 
-export class DropdownMenu {
+export class Menu {
   private trigger: HTMLElement;
   private menu: HTMLElement;
   private placement: Placement;
@@ -35,7 +35,7 @@ export class DropdownMenu {
     menuItems: string[],
     placement: Placement = "bottom-start",
     options: FloatingOptions = {},
-    additionalClasses: string[] = [],
+    additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
     this.placement = placement;
@@ -93,7 +93,7 @@ export class DropdownMenu {
         container: this.container,
         middleware: this.middleware,
         visibilityState,
-      },
+      }
     );
 
     // Handle visibility based on middleware data and visibility state
