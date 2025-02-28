@@ -8,7 +8,7 @@ import { isRootElement } from "./isRootElement";
  */
 export const getUniqueAncestors = (
   reference: HTMLElement,
-  floating: HTMLElement
+  floating: HTMLElement,
 ): Element[] => {
   return getUniqueElements([
     getParentElements(reference),

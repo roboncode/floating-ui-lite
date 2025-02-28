@@ -13,12 +13,12 @@ interface AutoPlacementOptions {
  */
 function getAvailableSpace(
   state: ComputePositionState,
-  placement: Placement
+  placement: Placement,
 ): number {
   const position = computeInitialPosition(
     state.rects.reference,
     state.rects.floating,
-    placement
+    placement,
   );
   const testState = { ...state, ...position };
 
@@ -90,7 +90,7 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
         const newPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          bestPlacement
+          bestPlacement,
         );
         return {
           ...newPosition,

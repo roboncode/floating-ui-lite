@@ -35,7 +35,7 @@ export class DropdownMenu {
     menuItems: string[],
     placement: Placement = "bottom-start",
     options: FloatingOptions = {},
-    additionalClasses: string[] = []
+    additionalClasses: string[] = [],
   ) {
     this.trigger = trigger;
     this.placement = placement;
@@ -93,7 +93,7 @@ export class DropdownMenu {
         container: this.container,
         middleware: this.middleware,
         visibilityState,
-      }
+      },
     );
 
     // Handle visibility based on middleware data and visibility state

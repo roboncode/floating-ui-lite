@@ -10,7 +10,7 @@ import { isInViewport } from "../core/isInViewport";
  */
 export const computeVisibilityState = (
   reference: HTMLElement,
-  floating: HTMLElement
+  floating: HTMLElement,
 ): VisibilityState => {
   return {
     isReferenceVisible: isElementVisible(reference),

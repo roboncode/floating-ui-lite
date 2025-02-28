@@ -37,7 +37,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
       const initialPosition = computeInitialPosition(
         state.rects.reference,
         state.rects.floating,
-        placement
+        placement,
       );
       const initialState = { ...state, ...initialPosition };
 
@@ -51,7 +51,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
         const fallbackPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          fallbackPlacement
+          fallbackPlacement,
         );
         const testState = { ...state, ...fallbackPosition };
 
@@ -81,7 +81,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
         const testPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          testPlacement
+          testPlacement,
         );
         const testState = { ...state, ...testPosition };
         const space = getAvailableSpace(testState);
@@ -113,7 +113,7 @@ export function placement(options: PlacementOptions = {}): Middleware {
  */
 function fitsInViewport(
   state: ComputePositionState,
-  padding: number = 0
+  padding: number = 0,
 ): boolean {
   const { x, y } = state;
   const { floating } = state.rects;

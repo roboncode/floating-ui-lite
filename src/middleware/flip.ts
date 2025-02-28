@@ -57,7 +57,7 @@ function getAvailableSpace(
   size: number,
   boundaries: Boundaries | null,
   mainAxis: MainAxis,
-  viewport: ViewportDimensions
+  viewport: ViewportDimensions,
 ): number {
   const isVertical = mainAxis === "top" || mainAxis === "bottom";
   const viewportSize = isVertical ? viewport.height : viewport.width;
@@ -96,7 +96,7 @@ function hasEnoughSpace(
   containerBoundaries: Boundaries | null,
   outerBoundaries: Boundaries | null,
   padding: number,
-  viewport: ViewportDimensions
+  viewport: ViewportDimensions,
 ): boolean {
   const { x, y } = state;
   const floating = state.rects.floating;
@@ -112,14 +112,14 @@ function hasEnoughSpace(
           floating.height,
           containerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
         getAvailableSpace(
           y,
           floating.height,
           outerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
       ];
       break;
@@ -130,14 +130,14 @@ function hasEnoughSpace(
           floating.height,
           containerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
         getAvailableSpace(
           reference.y + reference.height,
           floating.height,
           outerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
       ];
       break;
@@ -148,14 +148,14 @@ function hasEnoughSpace(
           floating.width,
           containerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
         getAvailableSpace(
           x,
           floating.width,
           outerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
       ];
       break;
@@ -166,14 +166,14 @@ function hasEnoughSpace(
           floating.width,
           containerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
         getAvailableSpace(
           reference.x + reference.width,
           floating.width,
           outerBoundaries,
           mainAxis,
-          viewport
+          viewport,
         ),
       ];
       break;
@@ -232,7 +232,7 @@ export function flip(options: FlipOptions = {}): Middleware {
         containerBoundaries,
         outerBoundaries,
         padding,
-        viewport
+        viewport,
       );
 
       if (!currentSpace) {
@@ -257,14 +257,14 @@ export function flip(options: FlipOptions = {}): Middleware {
           containerBoundaries,
           outerBoundaries,
           padding,
-          viewport
+          viewport,
         );
 
         if (oppositeSpace) {
           const { x, y } = computeInitialPosition(
             state.rects.reference,
             state.rects.floating,
-            oppositePlacement
+            oppositePlacement,
           );
 
           const [oppositeMainAxis] = oppositePlacement.split("-");

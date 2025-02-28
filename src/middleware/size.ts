@@ -44,22 +44,22 @@ export function size(options: SizeOptions = {}): Middleware {
 
       const availableWidth = Math.max(
         0,
-        Math.min(viewport.width - x - padding, maxWidth)
+        Math.min(viewport.width - x - padding, maxWidth),
       );
       const availableHeight = Math.max(
         0,
-        Math.min(viewport.height - y - padding, maxHeight)
+        Math.min(viewport.height - y - padding, maxHeight),
       );
 
       const originalAspectRatio = rects.floating.width / rects.floating.height;
 
       let newWidth = Math.max(
         minWidth,
-        Math.min(rects.floating.width, availableWidth)
+        Math.min(rects.floating.width, availableWidth),
       );
       let newHeight = Math.max(
         minHeight,
-        Math.min(rects.floating.height, availableHeight)
+        Math.min(rects.floating.height, availableHeight),
       );
 
       // Maintain aspect ratio if enabled and original dimensions are valid

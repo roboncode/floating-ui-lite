@@ -50,7 +50,7 @@ const defaultOptions: AutoUpdateOptions = {
 const setupScrollListeners = (
   reference: HTMLElement,
   floating: HTMLElement,
-  throttledUpdate: (state: VisibilityState) => void
+  throttledUpdate: (state: VisibilityState) => void,
 ): (() => void) => {
   const onScroll = (event: Event) => {
     const target = event.target as Node;
@@ -91,7 +91,7 @@ const setupResizeObserver = (
   options: {
     ancestorResize?: boolean;
     elementResize?: boolean;
-  }
+  },
 ): (() => void) => {
   const observer = new ResizeObserver(() => {
     throttledUpdate(computeVisibilityState(reference, floating));
@@ -119,7 +119,7 @@ const setupResizeObserver = (
 const setupLayoutShiftObserver = (
   reference: HTMLElement,
   floating: HTMLElement,
-  throttledUpdate: (state: VisibilityState) => void
+  throttledUpdate: (state: VisibilityState) => void,
 ): (() => void) => {
   const getLayoutBoundary = (element: HTMLElement): HTMLElement => {
     let parent = element.parentElement;
@@ -173,7 +173,7 @@ export function autoUpdate(
   reference: HTMLElement,
   floating: HTMLElement,
   update: (state: VisibilityState) => void | Promise<void>,
-  options: AutoUpdateOptions = {}
+  options: AutoUpdateOptions = {},
 ): () => void {
   const mergedOptions = { ...defaultOptions, ...options };
   const throttledUpdate = throttle(async () => {
@@ -195,7 +195,7 @@ export function autoUpdate(
   } else {
     if (mergedOptions.ancestorScroll) {
       cleanupFns.push(
-        setupScrollListeners(reference, floating, throttledUpdate)
+        setupScrollListeners(reference, floating, throttledUpdate),
       );
     }
 
@@ -204,13 +204,13 @@ export function autoUpdate(
         setupResizeObserver(reference, floating, throttledUpdate, {
           ancestorResize: mergedOptions.ancestorResize,
           elementResize: mergedOptions.elementResize,
-        })
+        }),
       );
     }
 
     if (mergedOptions.layoutShift) {
       cleanupFns.push(
-        setupLayoutShiftObserver(reference, floating, throttledUpdate)
+        setupLayoutShiftObserver(reference, floating, throttledUpdate),
       );
     }
   }

@@ -6,7 +6,7 @@ import { getUniqueElements } from "./uniqueElements";
  */
 export const getUniqueScrollParents = (
   reference: HTMLElement,
-  floating: HTMLElement
+  floating: HTMLElement,
 ): Element[] => {
   return getUniqueElements([
     getScrollParents(reference, document.body),

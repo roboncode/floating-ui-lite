@@ -114,10 +114,10 @@ export class PlacementDemo {
     this.currentButton = button;
 
     this.instances.tooltips.forEach((tooltip) =>
-      tooltip.updatePlacement(placement)
+      tooltip.updatePlacement(placement),
     );
     this.instances.dropdowns.forEach((dropdown) =>
-      dropdown.updatePlacement(placement)
+      dropdown.updatePlacement(placement),
     );
   }
 

@@ -22,7 +22,7 @@ export class Tooltip {
     reference: HTMLElement,
     content: string,
     placement: Placement = "top",
-    options: FloatingOptions = {}
+    options: FloatingOptions = {},
   ) {
     this.reference = reference;
     this.placement = placement;
