@@ -1,172 +1,111 @@
 import { Menu } from "./menu";
 import { PlacementControl } from "./placement";
-import { Tooltip } from "./tooltip";
 
 // Helper function to get container by ID
 const getContainer = (id: string) => document.getElementById(id) as HTMLElement;
 
 // Store all instances for placement control
-const instances: { tooltips: Tooltip[]; dropdowns: Menu[] } = {
-  tooltips: [],
+const instances: { dropdowns: Menu[] } = {
   dropdowns: [],
 };
 
 // Initialize default examples (in document.body)
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-default")!,
-    "Default tooltip in document.body",
-    "top"
-  )
-);
-
 instances.dropdowns.push(
   new Menu(document.getElementById("dropdown-default")!, "bottom-start")
 );
 
-// Container 1: Simple container
-const container1 = getContainer("container1");
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-container1")!,
-    "Tooltip in Container 1",
-    "top",
-    { container: container1 }
-  )
-);
-
+// Simple container
+const simpleContainer = getContainer("simpleContainer");
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-container1")!, "bottom-start", {
-    container: container1,
+  new Menu(document.getElementById("dropdown-simple")!, "bottom-start", {
+    container: simpleContainer,
   })
 );
 
-// Container 2: Scrollable container
-const container2 = getContainer("container2");
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-container2")!,
-    "Tooltip in scrollable container",
-    "top",
-    { container: container2 }
-  )
-);
-
+// Scrollable container
+const scrollableContainer = getContainer("scrollableContainer");
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-container2")!, "bottom-start", {
-    container: container2,
+  new Menu(document.getElementById("dropdown-scrollable")!, "bottom-start", {
+    container: scrollableContainer,
   })
 );
 
-// Container 3: Nested scrollable containers
-const container3Inner = getContainer("container3-inner");
+// Nested scrollable containers
+const nestedInnerContainer = getContainer("nestedInnerContainer");
 
 // Elements contained within the nested container
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-container3")!,
-    "Tooltip in nested container",
-    "top",
-    { container: container3Inner }
-  )
-);
-
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-container3")!, "bottom-start", {
-    container: container3Inner,
+  new Menu(document.getElementById("dropdown-nested")!, "bottom-start", {
+    container: nestedInnerContainer,
   })
 );
 
 // Elements that float to document.body from nested container
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-container3-floating")!,
-    "Tooltip that floats to body from nested container",
-    "top"
-  )
-);
-
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-container3-floating")!,
-    "bottom-start"
-  )
+  new Menu(document.getElementById("dropdown-nested-floating")!, "bottom-start")
 );
 
-// Container 4: Mixed container targets
-const container4 = getContainer("container4");
-
-// Tooltip in container, floating element in body
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-mixed1")!,
-    "Tooltip from container to body",
-    "top"
-  )
-);
-
-// Tooltip in body, floating element in container
-instances.tooltips.push(
-  new Tooltip(
-    document.getElementById("tooltip-mixed2")!,
-    "Tooltip from body to container",
-    "bottom",
-    { container: container4 }
-  )
-);
+// Mixed container targets
+const mixedTargetContainer = getContainer("mixedTargetContainer");
 
 // Dropdown in container, floating element in body
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-mixed1")!, "bottom-start")
+  new Menu(document.getElementById("dropdown-mixed-to-body")!, "bottom-start")
 );
 
 // Dropdown in body, floating element in container
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-mixed2")!, "bottom-start", {
-    container: container4,
-  })
+  new Menu(
+    document.getElementById("dropdown-mixed-to-container")!,
+    "bottom-start",
+    {
+      container: mixedTargetContainer,
+    }
+  )
 );
 
 // Initialize placement demo with all instances
 new PlacementControl(instances);
 
 // Resize and Layout Shift Testing
-const resizeContainer = getContainer("resize-container1");
-const resizeDropdown1 = document.getElementById("dropdown-resize1")!;
+const resizableContainer = getContainer("resizableContainer");
+const resizableDropdown = document.getElementById("dropdown-resizable")!;
 instances.dropdowns.push(
   new Menu(
-    resizeDropdown1,
+    resizableDropdown,
     "bottom-start",
     {
-      container: resizeContainer,
+      container: resizableContainer,
       // Event-based approach - explicit listeners
       ancestorScroll: true,
       elementResize: true,
       layoutShift: true,
     },
-    resizeDropdown1.dataset.dropdownClass?.split(" ") || []
+    resizableDropdown.dataset.dropdownClass?.split(" ") || []
   )
 );
 
 // Element resize testing
-const elementResizeContainer = getContainer("element-resize-container");
-const resizeDropdown2 = document.getElementById("dropdown-resize2")!;
+const elementResizeContainer = getContainer("elementResizeContainer");
+const resizeTriggerDropdown = document.getElementById(
+  "dropdown-resize-trigger"
+)!;
 instances.dropdowns.push(
   new Menu(
-    resizeDropdown2,
+    resizeTriggerDropdown,
     "bottom-start",
     {
       // RAF approach - continuous updates
       animationFrame: true,
       container: elementResizeContainer,
     },
-    resizeDropdown2.dataset.dropdownClass?.split(" ") || []
+    resizeTriggerDropdown.dataset.dropdownClass?.split(" ") || []
   )
 );
 
 // Toggle element size
 document.getElementById("toggle-size")?.addEventListener("click", () => {
-  const button = document.getElementById("dropdown-resize2");
+  const button = document.getElementById("dropdown-resize-trigger");
   button?.classList.toggle("expanded");
 });
 
@@ -180,6 +119,6 @@ document.getElementById("toggle-adjacent")?.addEventListener("click", () => {
 
 // Toggle container width
 document.getElementById("toggle-container")?.addEventListener("click", () => {
-  const container = getContainer("element-resize-container");
+  const container = getContainer("elementResizeContainer");
   container.classList.toggle("expanded");
 });

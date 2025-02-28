@@ -11,245 +11,190 @@
       href="./src/styles/app.css" />
     <link
       rel="stylesheet"
-      href="./src/styles/tooltip.css" />
-    <link
-      rel="stylesheet"
       href="./src/styles/placement.css" />
     <link
       rel="stylesheet"
       href="./src/styles/menu.css" />
   </head>
   <body>
-    <h1>UEF Anchor</h1>
+    <div class="anchor-demo">
+      <h1>UEF Anchor</h1>
 
-    <!-- Default (body container) examples -->
-    <div class="section">
-      <h2>Default Body Container</h2>
-      <div class="demo-grid">
-        <div class="demo-item">
-          <button
-            class="button"
-            id="tooltip-default">
-            Hover Me (Default)
-          </button>
-        </div>
-        <div class="demo-item">
-          <button
-            class="button"
-            id="dropdown-default">
-            Click Me (Default)
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Custom container examples -->
-    <div class="section">
-      <h2>Custom Containers</h2>
-
-      <!-- Container 1: Simple container -->
-      <div
-        class="container"
-        id="container1">
-        <span class="container-label">Container 1</span>
-        <div class="demo-grid">
-          <div class="demo-item">
+      <!-- Default (body container) examples -->
+      <div class="anchor-demo-section">
+        <h2>Default Body Container</h2>
+        <div class="anchor-demo-grid">
+          <div class="anchor-demo-block">
             <button
-              class="button"
-              id="tooltip-container1">
-              Hover (Container 1)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-container1">
-              Click (Container 1)
+              class="anchor-demo-button"
+              id="dropdown-default">
+              Default
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Container 2: Scrollable container -->
-      <div class="scroll-container-wrapper">
-        <span class="container-label">Scrollable Container</span>
+      <!-- Custom container examples -->
+      <div class="anchor-demo-section">
+        <h2>Custom Containers</h2>
+
+        <!-- Container 1: Simple container -->
         <div
-          class="scroll-container"
-          id="container2">
-          <div class="spacer">Scroll Down ↓</div>
-          <div class="demo-grid">
-            <div class="demo-item">
+          class="anchor-demo-container"
+          id="simpleContainer">
+          <span class="anchor-demo-label">Container 1</span>
+          <div class="anchor-demo-grid">
+            <div class="anchor-demo-block">
               <button
-                class="button"
-                id="tooltip-container2">
-                Hover (Scroll Container)
-              </button>
-            </div>
-            <div class="demo-item">
-              <button
-                class="button"
-                id="dropdown-container2">
-                Click (Scroll Container)
+                class="anchor-demo-button"
+                id="dropdown-simple">
+                Container 1
               </button>
             </div>
           </div>
-          <div class="spacer">Scroll Up ↑</div>
         </div>
-      </div>
 
-      <!-- Container 3: Nested scrollable containers -->
-      <div class="scroll-container-wrapper">
-        <span class="container-label">Outer Scroll Container</span>
-        <div
-          class="scroll-container"
-          id="container3">
-          <div class="spacer">Outer Scroll ↓</div>
-
-          <div class="scroll-container-wrapper">
-            <span class="container-label">Inner Scroll Container</span>
-            <div
-              class="nested-container scroll-container"
-              id="container3-inner">
-              <div class="spacer">Inner Scroll ↓</div>
-              <div class="demo-grid">
-                <div class="demo-item">
-                  <button
-                    class="button"
-                    id="tooltip-container3">
-                    Hover (Nested)
-                  </button>
-                </div>
-                <div class="demo-item">
-                  <button
-                    class="button"
-                    id="dropdown-container3">
-                    Click (Nested)
-                  </button>
-                </div>
-                <div class="demo-item">
-                  <button
-                    class="button"
-                    id="tooltip-container3-floating">
-                    Hover (Nested → Body)
-                  </button>
-                </div>
-                <div class="demo-item">
-                  <button
-                    class="button"
-                    id="dropdown-container3-floating">
-                    Click (Nested → Body)
-                  </button>
-                </div>
+        <!-- Container 2: Scrollable container -->
+        <div class="anchor-demo-wrapper">
+          <span class="anchor-demo-label">Scrollable Container</span>
+          <div
+            class="anchor-demo-container scrollable"
+            id="scrollableContainer">
+            <div class="anchor-demo-spacer">Scroll Down ↓</div>
+            <div class="anchor-demo-grid">
+              <div class="anchor-demo-block">
+                <button
+                  class="anchor-demo-button"
+                  id="dropdown-scrollable">
+                  Scroll Container
+                </button>
               </div>
-              <div class="spacer">Inner Scroll ↑</div>
             </div>
-          </div>
-
-          <div class="spacer">Outer Scroll ↑</div>
-        </div>
-      </div>
-
-      <!-- Container 4: Mixed container targets -->
-      <div
-        class="container"
-        id="container4">
-        <span class="container-label">Mixed Container Targets</span>
-        <div class="demo-grid">
-          <div class="demo-item">
-            <button
-              class="button"
-              id="tooltip-mixed1">
-              Hover (Container → Body)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="tooltip-mixed2">
-              Hover (Body → Container)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-mixed1">
-              Click (Container → Body)
-            </button>
-          </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-mixed2">
-              Click (Body → Container)
-            </button>
+            <div class="anchor-demo-spacer">Scroll Up ↑</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Resize and Layout Shift Testing -->
-    <div class="section">
-      <h2>Resize & Layout Shift Testing</h2>
+        <!-- Container 3: Nested scrollable containers -->
+        <div class="anchor-demo-wrapper">
+          <span class="anchor-demo-label">Outer Scroll Container</span>
+          <div
+            class="anchor-demo-container scrollable"
+            id="nestedOuterContainer">
+            <div class="anchor-demo-spacer">Outer Scroll ↓</div>
 
-      <!-- Resizable Container Example -->
-      <div
-        class="container resizable-container"
-        id="resize-container1">
-        <span class="container-label">Resizable Container</span>
-        <div class="resize-handle"></div>
-        <div class="demo-grid">
-          <div class="demo-item">
-            <button
-              class="button"
-              id="dropdown-resize1"
-              data-dropdown-class="wide">
-              Dropdown in Resizable
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Element Size Change Example -->
-      <div
-        class="container transition-all duration-300"
-        id="element-resize-container">
-        <span class="container-label">Element Size Changes</span>
-        <div class="demo-grid">
-          <div class="demo-item flex gap-5 justify-center">
-            <div
-              class="shift-element w-0 overflow-hidden transition-all duration-300">
+            <div class="anchor-demo-wrapper">
+              <span class="anchor-demo-label">Inner Scroll Container</span>
               <div
-                class="w-25 h-auto p-5 border border-dashed border-zinc-800 rounded-lg">
-                Shift Content
+                class="anchor-demo-container scrollable"
+                id="nestedInnerContainer">
+                <div class="anchor-demo-spacer">Inner Scroll ↓</div>
+                <div class="anchor-demo-grid">
+                  <div class="anchor-demo-block">
+                    <button
+                      class="anchor-demo-button"
+                      id="dropdown-nested">
+                      Nested
+                    </button>
+                  </div>
+                  <div class="anchor-demo-block">
+                    <button
+                      class="anchor-demo-button"
+                      id="dropdown-nested-floating">
+                      Nested → Body
+                    </button>
+                  </div>
+                </div>
+                <div class="anchor-demo-spacer">Inner Scroll ↑</div>
               </div>
             </div>
-            <div
-              class="resizable-element transition-all duration-300"
-              id="resizable-trigger">
+
+            <div class="anchor-demo-spacer">Outer Scroll ↑</div>
+          </div>
+        </div>
+
+        <!-- Container 4: Mixed container targets -->
+        <div
+          class="anchor-demo-container"
+          id="mixedTargetContainer">
+          <span class="anchor-demo-label">Mixed Container Targets</span>
+          <div class="anchor-demo-grid">
+            <div class="anchor-demo-block">
               <button
-                class="button"
-                id="dropdown-resize2"
-                data-dropdown-class="wide">
-                Resizable Trigger
+                class="anchor-demo-button"
+                id="dropdown-mixed-to-body">
+                Container → Body
+              </button>
+            </div>
+            <div class="anchor-demo-block">
+              <button
+                class="anchor-demo-button"
+                id="dropdown-mixed-to-container">
+                Body → Container
               </button>
             </div>
           </div>
-          <div class="demo-item">
-            <button
-              class="button"
-              id="toggle-size">
-              Trigger Size
-            </button>
-            <button
-              class="button ml-2.5"
-              id="toggle-adjacent">
-              Adjacent
-            </button>
-            <button
-              class="button ml-2.5"
-              id="toggle-container">
-              Container Width
-            </button>
+        </div>
+      </div>
+
+      <!-- Resize and Layout Shift Testing -->
+      <div class="anchor-demo-section">
+        <h2>Resize & Layout Shift Testing</h2>
+
+        <!-- Resizable Container Example -->
+        <div
+          class="anchor-demo-container resizable"
+          id="resizableContainer">
+          <span class="anchor-demo-label">Resizable Container</span>
+          <div class="anchor-demo-grid">
+            <div class="anchor-demo-block">
+              <button
+                class="anchor-demo-button"
+                id="dropdown-resizable"
+                data-dropdown-class="wide">
+                Dropdown in Resizable
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Element Size Change Example -->
+        <div
+          class="anchor-demo-container"
+          id="elementResizeContainer">
+          <span class="anchor-demo-label">Element Size Changes</span>
+          <div class="anchor-demo-grid">
+            <div class="anchor-demo-block flex gap-5 justify-center">
+              <div class="anchor-demo-shift-element">
+                <div>Shift Content</div>
+              </div>
+              <div
+                class="anchor-demo-container resizable"
+                id="resizableTrigger">
+                <button
+                  class="anchor-demo-button"
+                  id="dropdown-resize-trigger"
+                  data-dropdown-class="wide">
+                  Resizable Trigger
+                </button>
+              </div>
+            </div>
+            <div class="anchor-demo-block">
+              <button
+                class="anchor-demo-button"
+                id="toggle-size">
+                Trigger Size
+              </button>
+              <button
+                class="anchor-demo-button"
+                id="toggle-adjacent">
+                Adjacent
+              </button>
+              <button
+                class="anchor-demo-button"
+                id="toggle-container">
+                Container Width
+              </button>
+            </div>
           </div>
         </div>
       </div>
