@@ -10,7 +10,7 @@ import { VisibilityState } from "../types";
  */
 export const computeVisibilityState = (
   reference: HTMLElement,
-  floating: HTMLElement
+  floating: HTMLElement,
 ): VisibilityState => {
   return {
     isReferenceVisible: isElementVisible(reference) && isInView(reference),

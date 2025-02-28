@@ -112,7 +112,7 @@ export class PlacementControl {
     this.currentButton = button;
 
     this.instances.dropdowns.forEach((dropdown) =>
-      dropdown.updatePlacement(placement)
+      dropdown.updatePlacement(placement),
     );
   }
 

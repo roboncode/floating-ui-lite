@@ -11,7 +11,7 @@ const instances: { dropdowns: Menu[] } = {
 
 // Initialize default examples (in document.body)
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-default")!, "bottom-start")
+  new Menu(document.getElementById("dropdown-default")!, "bottom-start"),
 );
 
 // Simple container
@@ -19,7 +19,7 @@ const simpleContainer = getContainer("simpleContainer");
 instances.dropdowns.push(
   new Menu(document.getElementById("dropdown-simple")!, "bottom-start", {
     container: simpleContainer,
-  })
+  }),
 );
 
 // Scrollable container
@@ -27,7 +27,7 @@ const scrollableContainer = getContainer("scrollableContainer");
 instances.dropdowns.push(
   new Menu(document.getElementById("dropdown-scrollable")!, "bottom-start", {
     container: scrollableContainer,
-  })
+  }),
 );
 
 // Nested scrollable containers
@@ -37,12 +37,15 @@ const nestedInnerContainer = getContainer("nestedInnerContainer");
 instances.dropdowns.push(
   new Menu(document.getElementById("dropdown-nested")!, "bottom-start", {
     container: nestedInnerContainer,
-  })
+  }),
 );
 
 // Elements that float to document.body from nested container
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-nested-floating")!, "bottom-start")
+  new Menu(
+    document.getElementById("dropdown-nested-floating")!,
+    "bottom-start",
+  ),
 );
 
 // Mixed container targets
@@ -50,7 +53,7 @@ const mixedTargetContainer = getContainer("mixedTargetContainer");
 
 // Dropdown in container, floating element in body
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-mixed-to-body")!, "bottom-start")
+  new Menu(document.getElementById("dropdown-mixed-to-body")!, "bottom-start"),
 );
 
 // Dropdown in body, floating element in container
@@ -60,8 +63,8 @@ instances.dropdowns.push(
     "bottom-start",
     {
       container: mixedTargetContainer,
-    }
-  )
+    },
+  ),
 );
 
 // Initialize placement demo with all instances
@@ -81,14 +84,14 @@ instances.dropdowns.push(
       elementResize: true,
       layoutShift: true,
     },
-    resizableDropdown.dataset.dropdownClass?.split(" ") || []
-  )
+    resizableDropdown.dataset.dropdownClass?.split(" ") || [],
+  ),
 );
 
 // Element resize testing
 const elementResizeContainer = getContainer("elementResizeContainer");
 const resizeTriggerDropdown = document.getElementById(
-  "dropdown-resize-trigger"
+  "dropdown-resize-trigger",
 )!;
 instances.dropdowns.push(
   new Menu(
@@ -99,8 +102,8 @@ instances.dropdowns.push(
       animationFrame: true,
       container: elementResizeContainer,
     },
-    resizeTriggerDropdown.dataset.dropdownClass?.split(" ") || []
-  )
+    resizeTriggerDropdown.dataset.dropdownClass?.split(" ") || [],
+  ),
 );
 
 // Toggle element size

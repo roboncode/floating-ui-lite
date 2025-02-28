@@ -34,7 +34,7 @@ export class Menu {
     trigger: HTMLElement,
     placement: Placement = "bottom-start",
     options: FloatingOptions = {},
-    additionalClasses: string[] = []
+    additionalClasses: string[] = [],
   ) {
     this.trigger = trigger;
     // console.log(
@@ -87,7 +87,7 @@ export class Menu {
     console.log(
       "Updating position with placement:",
       this.placement,
-      typeof this.placement
+      typeof this.placement,
     );
 
     const { x, y, middlewareData } = await computePosition(
@@ -99,7 +99,7 @@ export class Menu {
         container: this.container,
         middleware: this.middleware,
         visibilityState,
-      }
+      },
     );
 
     // Handle visibility based on middleware data and visibility state

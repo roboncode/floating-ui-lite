@@ -12,7 +12,7 @@ import { ComputePositionState } from "../types";
  */
 export function shouldSkipMiddleware(
   state: ComputePositionState,
-  ignoreVisibility = false
+  ignoreVisibility = false,
 ): boolean {
   if (ignoreVisibility) {
     return false;
