@@ -3,9 +3,6 @@ import { getUniqueElements } from "./uniqueElements";
 
 /**
  * Returns an array of unique scroll parents for both reference and floating elements
- * @param reference - Reference element
- * @param floating - Floating element
- * @returns Array of unique scroll parent elements
  */
 export const getUniqueScrollParents = (
   reference: HTMLElement,

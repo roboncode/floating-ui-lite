@@ -2,32 +2,38 @@ import { ComputePositionState, Middleware, Placement } from "../types";
 
 import { computeInitialPosition } from "../core/computePosition";
 import { getBoundingClientRect } from "../core/getBoundingClientRect";
+import { getScrollParents } from "../core/getScrollParents";
+import { getViewportDimensions } from "../core/getViewportDimensions";
+import { isScrollable } from "../core/isScrollable";
+import { shouldSkipMiddleware } from "../utils/shouldSkipMiddleware";
 
 /**
  * Configuration options for the flip middleware
- * @property {number} padding - Minimum required space between element and boundaries
- * @property {boolean} debug - Enable debug logging for space calculations
  */
 export interface FlipOptions {
-  fallbackPlacements?: Placement[];
   padding?: number;
 }
 
 /**
  * Represents the main axis of placement (top, bottom, left, right)
- * Used to determine the primary direction of positioning
  */
 type MainAxis = "top" | "bottom" | "left" | "right";
 
 /**
- * Type alias for the boundaries object returned by getContainerBoundaries
- * Contains coordinates of container edges in viewport space
+ * Type alias for the boundaries object
  */
 type Boundaries = ReturnType<typeof getContainerBoundaries>;
 
 /**
+ * Viewport dimensions type
+ */
+interface ViewportDimensions {
+  width: number;
+  height: number;
+}
+
+/**
  * Maps each placement to its opposite direction
- * Used when flipping element placement to the opposite side
  */
 const opposites: Record<MainAxis, MainAxis> = {
   top: "bottom",
@@ -36,27 +42,6 @@ const opposites: Record<MainAxis, MainAxis> = {
   right: "left",
 };
 
-/**
- * Determines if a container element is scrollable
- * Checks computed styles for overflow properties
- * Body is never considered scrollable in this context
- *
- * @param container - The HTML element to check
- * @returns boolean - True if the container is scrollable
- */
-function isScrollableContainer(container: HTMLElement): boolean {
-  if (container === document.body) return false;
-  const { overflow, overflowX, overflowY } = window.getComputedStyle(container);
-  return /(auto|scroll|overlay)/.test(overflow + overflowY + overflowX);
-}
-
-/**
- * Gets the boundaries of a container in viewport coordinates
- * Uses getBoundingClientRect for accurate viewport-relative positioning
- *
- * @param container - The container element to get boundaries for
- * @returns Boundaries object with top, right, bottom, left coordinates
- */
 function getContainerBoundaries(container: HTMLElement) {
   const rect = getBoundingClientRect(container);
   return {
@@ -67,57 +52,6 @@ function getContainerBoundaries(container: HTMLElement) {
   };
 }
 
-/**
- * Finds the nearest scrollable parent element
- * Traverses up the DOM tree until it finds a scrollable container
- * Used to determine which container's boundaries to consider
- *
- * @param element - The starting element to search from
- * @returns HTMLElement | null - The nearest scrollable parent or null if none found
- */
-function findScrollableParent(element: Element): HTMLElement | null {
-  let parent = element.parentElement;
-  while (parent) {
-    if (isScrollableContainer(parent)) {
-      return parent;
-    }
-    parent = parent.parentElement;
-  }
-  return null;
-}
-
-/**
- * Represents viewport dimensions
- * Used to cache window dimensions and avoid repeated DOM reads
- */
-interface ViewportDimensions {
-  width: number;
-  height: number;
-}
-
-/**
- * Gets current viewport dimensions
- * Caches the values to avoid layout thrashing
- */
-function getViewportDimensions(): ViewportDimensions {
-  return {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
-}
-
-/**
- * Calculates available space for a given position and boundaries
- * Considers both viewport and container boundaries
- * Returns the most restrictive space available
- *
- * @param value - Current coordinate value (x or y)
- * @param size - Size of the floating element in the relevant dimension
- * @param boundaries - Container boundaries to check against
- * @param mainAxis - Primary axis of placement
- * @param viewport - Cached viewport dimensions
- * @returns number - Available space in pixels
- */
 function getAvailableSpace(
   value: number,
   size: number,
@@ -125,22 +59,18 @@ function getAvailableSpace(
   mainAxis: MainAxis,
   viewport: ViewportDimensions
 ): number {
-  // Determine if we're working with vertical or horizontal axis
   const isVertical = mainAxis === "top" || mainAxis === "bottom";
   const viewportSize = isVertical ? viewport.height : viewport.width;
 
-  // Calculate space relative to viewport edges
   const viewportSpace =
     mainAxis === "top" || mainAxis === "left"
-      ? value // For top/left, space is distance from edge
-      : viewportSize - (value + size); // For bottom/right, space is remaining distance
+      ? value
+      : viewportSize - (value + size);
 
-  // If no container boundaries, only consider viewport
   if (!boundaries) {
     return viewportSpace;
   }
 
-  // Calculate space relative to container boundaries
   let containerSpace: number;
   switch (mainAxis) {
     case "top":
@@ -157,24 +87,9 @@ function getAvailableSpace(
       break;
   }
 
-  // Return the smaller of viewport and container space
   return Math.min(viewportSpace, containerSpace);
 }
 
-/**
- * Determines if there's enough space for the floating element
- * Checks both container and outer container boundaries
- * Considers padding requirements
- *
- * @param state - Current position state
- * @param mainAxis - Primary placement axis
- * @param containerBoundaries - Immediate container boundaries
- * @param outerBoundaries - Outer container boundaries
- * @param padding - Required space padding
- * @param viewport - Cached viewport dimensions
- * @param debug - Enable debug logging
- * @returns boolean - True if there's enough space
- */
 function hasEnoughSpace(
   state: ComputePositionState,
   mainAxis: MainAxis,
@@ -187,7 +102,6 @@ function hasEnoughSpace(
   const floating = state.rects.floating;
   const reference = state.rects.reference;
 
-  // Calculate space for each relevant boundary
   let spaces: number[] = [];
 
   switch (mainAxis) {
@@ -265,36 +179,23 @@ function hasEnoughSpace(
       break;
   }
 
-  // Find the most restrictive space available
   const availableSpace = Math.min(...spaces.map((space) => space ?? Infinity));
 
   return availableSpace >= padding;
 }
 
-/**
- * Cache object for container boundaries
- * Stores both immediate container and outer container boundaries
- */
 interface BoundaryCache {
   containerBoundaries: Boundaries | null;
   outerBoundaries: Boundaries | null;
 }
 
-/**
- * Gets and caches boundaries for both container and outer container
- * Reduces DOM reads by caching the results
- *
- * @param container - The container element
- * @returns BoundaryCache - Cached boundaries for both containers
- */
 function getBoundaries(container: HTMLElement): BoundaryCache {
-  // Get immediate container boundaries if scrollable
-  const containerBoundaries = isScrollableContainer(container)
+  const containerBoundaries = isScrollable(container)
     ? getContainerBoundaries(container)
     : null;
 
-  // Find and get outer container boundaries
-  const outerScrollable = findScrollableParent(container);
+  const scrollParents = getScrollParents(container, document.body);
+  const outerScrollable = scrollParents[0] as HTMLElement | null;
   const outerBoundaries = outerScrollable
     ? getContainerBoundaries(outerScrollable)
     : null;
@@ -305,52 +206,26 @@ function getBoundaries(container: HTMLElement): BoundaryCache {
   };
 }
 
-/**
- * Flip middleware that changes element placement when there isn't enough space
- * Handles nested scrollable containers and viewport boundaries
- * Supports debug logging for troubleshooting
- *
- * Key features:
- * - Checks both container and viewport boundaries
- * - Handles nested scrollable containers
- * - Caches calculations to improve performance
- * - Provides detailed debug logging
- * - Maintains alignment when flipping
- *
- * @param options - Configuration options for the middleware
- * @returns Middleware - The flip middleware function
- */
 export function flip(options: FlipOptions = {}): Middleware {
   return {
     name: "flip",
     fn: async (state: ComputePositionState) => {
-      // Skip processing if elements are not visible or not in viewport
-      if (
-        state.visibilityState &&
-        (!state.visibilityState.isReferenceVisible ||
-          !state.visibilityState.isFloatingVisible ||
-          !state.visibilityState.isWithinViewport)
-      ) {
+      if (shouldSkipMiddleware(state)) {
         return {};
       }
 
       const { placement, elements } = state;
-      const { padding = 5 } = options;
+      const { padding = 0 } = options;
       const container = elements.container || document.body;
 
-      // Extract and cache placement information
       const [mainAxis, alignment = ""] = placement.split("-") as [
         MainAxis,
         string?,
       ];
 
-      // Get and cache all relevant boundaries
       const { containerBoundaries, outerBoundaries } = getBoundaries(container);
-
-      // Cache viewport dimensions
       const viewport = getViewportDimensions();
 
-      // Check if current placement has enough space
       const currentSpace = hasEnoughSpace(
         state,
         mainAxis,
@@ -360,27 +235,22 @@ export function flip(options: FlipOptions = {}): Middleware {
         viewport
       );
 
-      // If current placement doesn't have enough space, try opposite
       if (!currentSpace) {
         const oppositePlacement = `${opposites[mainAxis]}${
           alignment ? `-${alignment}` : ""
         }` as Placement;
 
-        // Get the offset value from middleware data
         const offsetValue = state.middlewareData.offset?.value ?? 0;
 
-        // Create test state for opposite placement with offset
         const testState = {
           ...state,
           placement: oppositePlacement,
-          // Adjust test coordinates to include offset
           ...(opposites[mainAxis] === "top" && { y: state.y - offsetValue }),
           ...(opposites[mainAxis] === "bottom" && { y: state.y + offsetValue }),
           ...(opposites[mainAxis] === "left" && { x: state.x - offsetValue }),
           ...(opposites[mainAxis] === "right" && { x: state.x + offsetValue }),
         };
 
-        // Check if opposite placement has enough space
         const oppositeSpace = hasEnoughSpace(
           testState,
           opposites[mainAxis],
@@ -390,16 +260,13 @@ export function flip(options: FlipOptions = {}): Middleware {
           viewport
         );
 
-        // If opposite has space, flip to it
         if (oppositeSpace) {
-          // Calculate new base position
           const { x, y } = computeInitialPosition(
             state.rects.reference,
             state.rects.floating,
             oppositePlacement
           );
 
-          // Apply offset in the new direction
           const [oppositeMainAxis] = oppositePlacement.split("-");
           const adjustedPosition = {
             x,
@@ -417,7 +284,6 @@ export function flip(options: FlipOptions = {}): Middleware {
         }
       }
 
-      // If no flip needed or possible, return empty object
       return {};
     },
   };

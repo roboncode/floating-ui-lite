@@ -44,23 +44,23 @@ export function hide(options: HideOptions = {}): Middleware {
       isHidden =
         data.referenceHidden || (data.escaped && strategy === "escaped");
 
-      console.log(
-        "👁️ Hide:",
-        JSON.stringify(
-          {
-            strategy,
-            data,
-            visibilityState: {
-              isReferenceVisible: isReferenceInViewport,
-              isFloatingVisible: isFloatingInViewport,
-              isWithinViewport: isReferenceInViewport && isFloatingInViewport,
-            },
-            willHide: isHidden,
-          },
-          null,
-          2
-        )
-      );
+      // console.log(
+      //   "👁️ Hide:",
+      //   JSON.stringify(
+      //     {
+      //       strategy,
+      //       data,
+      //       visibilityState: {
+      //         isReferenceVisible: isReferenceInViewport,
+      //         isFloatingVisible: isFloatingInViewport,
+      //         isWithinViewport: isReferenceInViewport && isFloatingInViewport,
+      //       },
+      //       willHide: isHidden,
+      //     },
+      //     null,
+      //     2
+      //   )
+      // );
 
       return {
         middlewareData: {

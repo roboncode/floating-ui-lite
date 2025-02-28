@@ -1,168 +1,73 @@
-# Dropdown Menu Library
+# Anchor
 
-A lightweight and flexible positioning library for creating tooltips, dropdowns, popovers, and other floating UI elements. Built with TypeScript and zero dependencies.
-
-## Features
-
-- 🎯 Precise positioning with multiple placement options
-- 🔄 Smart flipping when there's not enough space
-- ↔️ Shift to keep elements in view
-- 📏 Automatic size adjustments
-- ➡️ Arrow positioning support
-- 🌐 Virtual element support
-- 🎨 Customizable middleware system
-- 📱 Framework agnostic
-
-## Installation
-
-```bash
-npm install dropdown-menu
-```
+A lightweight positioning engine for floating elements, inspired by floating-ui.com. Zero dependencies.
 
 ## Basic Usage
 
-```typescript
-import { computePosition, flip, shift } from "dropdown-menu";
+```ts
+import { computePosition, autoUpdate } from "anchor";
 
 // Basic positioning
-const { x, y } = await computePosition(referenceElement, floatingElement, {
+const { x, y } = await computePosition(reference, floating, {
   placement: "bottom",
-  middleware: [flip(), shift()],
+  middleware: [offset(10), flip(), shift()],
 });
 
-// Apply the position
-Object.assign(floatingElement.style, {
-  left: `${x}px`,
-  top: `${y}px`,
-});
+// Apply position
+floating.style.left = `${x}px`;
+floating.style.top = `${y}px`;
+
+// Keep position updated
+const cleanup = autoUpdate(reference, floating, update);
 ```
 
-## Components
+## Core Middleware
 
-### Tooltip Example
+### placement
 
-```typescript
-import { Tooltip } from "dropdown-menu/examples";
+Places the floating element relative to its reference.
 
-const button = document.querySelector("#my-button");
-const tooltip = new Tooltip(button, "I'm a tooltip!", "top");
-
-// Cleanup when needed
-tooltip.destroy();
+```ts
+placement("bottom"); // 'top' | 'right' | 'bottom' | 'left' with -start/-end variations
 ```
 
-### Dropdown Menu Example
+### offset
 
-```typescript
-import { DropdownMenu } from "dropdown-menu/examples";
+Offsets the floating element from its reference element.
 
-const trigger = document.querySelector("#menu-trigger");
-const items = ["Profile", "Settings", "Logout"];
-const menu = new DropdownMenu(trigger, items, "bottom-start");
-
-// Listen for item selection
-trigger.addEventListener("menuselect", (event) => {
-  console.log("Selected:", event.detail);
-});
-
-// Cleanup when needed
-menu.destroy();
+```ts
+offset(10); // number of pixels to offset
 ```
 
-## Middleware
+### flip
 
-### Placement
+Flips placement to the opposite side when there isn't enough space.
 
-Controls the preferred placement of the floating element.
-
-```typescript
-import { placement } from "dropdown-menu";
-
-placement({
-  fallbackPlacements: ["top", "right"],
-});
-```
-
-### Flip
-
-Automatically flips the placement when there isn't enough space.
-
-```typescript
-import { flip } from "dropdown-menu";
-
+```ts
 flip({
-  fallbackPlacements: ["top", "right"],
+  padding: 5, // padding from viewport edges
 });
 ```
 
-### Shift
+### shift
 
 Shifts the floating element to keep it in view.
 
-```typescript
-import { shift } from "dropdown-menu";
-
+```ts
 shift({
-  padding: 5,
+  padding: 5, // padding from viewport edges
+  mainAxis: true, // enable/disable shift on main axis
+  crossAxis: false, // enable/disable shift on cross axis
 });
 ```
 
-### Size
+### hide
 
-Adjusts the size of the floating element to fit available space.
+Shows/hides the floating element based on reference visibility and available space.
+ReferenceHidden means the "trigger", escaped means "floating element"
 
-```typescript
-import { size } from "dropdown-menu";
-
-size({
-  padding: 5,
-  minWidth: 100,
-  maxWidth: 300,
+```ts
+hide({
+  strategy: "referenceHidden", // 'referenceHidden' | 'escaped'
 });
 ```
-
-### Arrow
-
-Positions an arrow element pointing to the reference.
-
-```typescript
-import { arrow } from "dropdown-menu";
-
-arrow({
-  element: arrowElement,
-  padding: 5,
-});
-```
-
-### Virtual
-
-Handles positioning for virtual/detached elements.
-
-```typescript
-import { virtual } from "dropdown-menu";
-
-virtual({
-  ancestorScroll: true,
-  ancestorResize: true,
-});
-```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Run tests
-npm test
-
-# Build for production
-npm run build
-```
-
-## License
-
-MIT

@@ -2,6 +2,7 @@ import { ComputePositionState, Middleware } from "../types";
 
 import { getBoundingClientRect } from "../core/getBoundingClientRect";
 import { getViewportDimensions } from "../core/getViewportDimensions";
+import { shouldSkipMiddleware } from "../utils/shouldSkipMiddleware";
 
 interface ShiftOptions {
   mainAxis?: boolean;
@@ -18,12 +19,15 @@ export function shift(options: ShiftOptions = {}): Middleware {
     name: "shift",
     fn: async (state: ComputePositionState) => {
       // Skip processing if elements are not visible or not in viewport
-      if (
-        state.visibilityState &&
-        (!state.visibilityState.isReferenceVisible ||
-          !state.visibilityState.isFloatingVisible ||
-          !state.visibilityState.isWithinViewport)
-      ) {
+      // if (
+      //   state.visibilityState &&
+      //   (!state.visibilityState.isReferenceVisible ||
+      //     !state.visibilityState.isFloatingVisible ||
+      //     !state.visibilityState.isWithinViewport)
+      // ) {
+      //   return {};
+      // }
+      if (shouldSkipMiddleware(state)) {
         return {};
       }
 

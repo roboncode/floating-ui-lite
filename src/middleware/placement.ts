@@ -2,6 +2,7 @@ import { ComputePositionState, Middleware, Placement } from "../types";
 
 import { computeInitialPosition } from "../core/computePosition";
 import { getViewportDimensions } from "../core/getViewportDimensions";
+import { shouldSkipMiddleware } from "../utils/shouldSkipMiddleware";
 
 interface PlacementOptions {
   fallbackPlacements?: Placement[];
@@ -17,12 +18,15 @@ export function placement(options: PlacementOptions = {}): Middleware {
     name: "placement",
     async fn(state: ComputePositionState) {
       // Skip processing if elements are not visible or not in viewport
-      if (
-        state.visibilityState &&
-        (!state.visibilityState.isReferenceVisible ||
-          !state.visibilityState.isFloatingVisible ||
-          !state.visibilityState.isWithinViewport)
-      ) {
+      // if (
+      //   state.visibilityState &&
+      //   (!state.visibilityState.isReferenceVisible ||
+      //     !state.visibilityState.isFloatingVisible ||
+      //     !state.visibilityState.isWithinViewport)
+      // ) {
+      //   return {};
+      // }
+      if (shouldSkipMiddleware(state)) {
         return {};
       }
 

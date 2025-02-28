@@ -1,18 +1,23 @@
 import { ComputePositionState, Middleware } from "../types";
 
+import { shouldSkipMiddleware } from "../utils/shouldSkipMiddleware";
+
 export function offset(value = 0): Middleware {
   return {
     name: "offset",
     async fn(state: ComputePositionState) {
-      // Skip processing if elements are not visible or not in viewport
-      if (
-        state.visibilityState &&
-        (!state.visibilityState.isReferenceVisible ||
-          !state.visibilityState.isFloatingVisible ||
-          !state.visibilityState.isWithinViewport)
-      ) {
+      if (shouldSkipMiddleware(state)) {
         return {};
       }
+      // // Skip processing if elements are not visible or not in viewport
+      // if (
+      //   state.visibilityState &&
+      //   (!state.visibilityState.isReferenceVisible ||
+      //     !state.visibilityState.isFloatingVisible ||
+      //     !state.visibilityState.isWithinViewport)
+      // ) {
+      //   return {};
+      // }
 
       const { placement } = state;
       const [mainAxis] = placement.split("-");

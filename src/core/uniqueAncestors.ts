@@ -5,9 +5,6 @@ import { isRootElement } from "./isRootElement";
 /**
  * Returns an array of unique ancestors for both reference and floating elements,
  * excluding root elements
- * @param reference - Reference element
- * @param floating - Floating element
- * @returns Array of unique ancestor elements
  */
 export const getUniqueAncestors = (
   reference: HTMLElement,
