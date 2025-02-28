@@ -4,11 +4,11 @@ import {
   Placement,
 } from "../types";
 
+import { RectCacheManager } from "../utils/rectCache";
 import { getBoundingClientRect } from "./getBoundingClientRect";
 import { getScrollParents } from "./getScrollParents";
 import { getViewportRect } from "./getViewportRect";
 import { getWindowScroll } from "./getWindowScroll";
-import { RectCacheManager } from "./rectCache";
 
 const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   placement: "bottom",

@@ -1,5 +1,5 @@
 // import { Rect } from "../types";
-import { RectCacheManager } from "./rectCache";
+import { RectCacheManager } from "../utils/rectCache";
 
 /**
  * Gets the bounding client rect of an element with additional properties
