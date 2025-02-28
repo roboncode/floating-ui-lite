@@ -1,23 +1,23 @@
-import { Menu } from "./menu";
+import { Float } from "./float";
 import { PlacementControl } from "./placement";
 
 // Helper function to get container by ID
 const getContainer = (id: string) => document.getElementById(id) as HTMLElement;
 
 // Store all instances for placement control
-const instances: { dropdowns: Menu[] } = {
+const instances: { dropdowns: Float[] } = {
   dropdowns: [],
 };
 
 // Initialize default examples (in document.body)
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-default")!, "bottom-start"),
+  new Float(document.getElementById("dropdown-default")!, "bottom-start"),
 );
 
 // Simple container
 const simpleContainer = getContainer("simpleContainer");
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-simple")!, "bottom-start", {
+  new Float(document.getElementById("dropdown-simple")!, "bottom-start", {
     container: simpleContainer,
   }),
 );
@@ -25,7 +25,7 @@ instances.dropdowns.push(
 // Scrollable container
 const scrollableContainer = getContainer("scrollableContainer");
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-scrollable")!, "bottom-start", {
+  new Float(document.getElementById("dropdown-scrollable")!, "bottom-start", {
     container: scrollableContainer,
   }),
 );
@@ -35,14 +35,14 @@ const nestedInnerContainer = getContainer("nestedInnerContainer");
 
 // Elements contained within the nested container
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-nested")!, "bottom-start", {
+  new Float(document.getElementById("dropdown-nested")!, "bottom-start", {
     container: nestedInnerContainer,
   }),
 );
 
 // Elements that float to document.body from nested container
 instances.dropdowns.push(
-  new Menu(
+  new Float(
     document.getElementById("dropdown-nested-floating")!,
     "bottom-start",
   ),
@@ -53,12 +53,12 @@ const mixedTargetContainer = getContainer("mixedTargetContainer");
 
 // Dropdown in container, floating element in body
 instances.dropdowns.push(
-  new Menu(document.getElementById("dropdown-mixed-to-body")!, "bottom-start"),
+  new Float(document.getElementById("dropdown-mixed-to-body")!, "bottom-start"),
 );
 
 // Dropdown in body, floating element in container
 instances.dropdowns.push(
-  new Menu(
+  new Float(
     document.getElementById("dropdown-mixed-to-container")!,
     "bottom-start",
     {
@@ -74,7 +74,7 @@ new PlacementControl(instances);
 const resizableContainer = getContainer("resizableContainer");
 const resizableDropdown = document.getElementById("dropdown-resizable")!;
 instances.dropdowns.push(
-  new Menu(
+  new Float(
     resizableDropdown,
     "bottom-start",
     {
@@ -94,7 +94,7 @@ const resizeTriggerDropdown = document.getElementById(
   "dropdown-resize-trigger",
 )!;
 instances.dropdowns.push(
-  new Menu(
+  new Float(
     resizeTriggerDropdown,
     "bottom-start",
     {

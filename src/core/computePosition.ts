@@ -29,7 +29,7 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
 export async function computePosition(
   reference: HTMLElement,
   floating: HTMLElement,
-  options: ComputePositionOptions = {}
+  options: ComputePositionOptions = {},
 ): Promise<ComputePositionState> {
   // Clear any existing cached rects
   RectCacheManager.clear();
@@ -62,14 +62,14 @@ export async function computePosition(
       x: offset.x + (parent.scrollLeft || 0),
       y: offset.y + (parent.scrollTop || 0),
     }),
-    { x: 0, y: 0 }
+    { x: 0, y: 0 },
   );
 
   // Calculate initial position based on placement
   const { x, y } = computeInitialPosition(
     referenceRect,
     floatingRect,
-    placement
+    placement,
   );
 
   const initialState: ComputePositionState = {
@@ -121,7 +121,7 @@ export async function computePosition(
 export function computeInitialPosition(
   reference: DOMRect,
   floating: DOMRect,
-  placement: Placement
+  placement: Placement,
 ): { x: number; y: number } {
   const [mainAxis, crossAxis = "center"] = placement.split("-");
 

@@ -1,8 +1,8 @@
 import { Placement } from "../index";
-import { Menu } from "./menu";
+import { Float } from "./float";
 
 interface Instances {
-  dropdowns: Menu[];
+  dropdowns: Float[];
 }
 
 export class PlacementControl {

@@ -1,0 +1,92 @@
+:root {
+  --border-color: #e4e4e7;
+  --text-color: #71717a;
+  --active-color: #0ea5e9;
+  --hover-text: #3f3f46;
+  --bg-color: white;
+}
+
+/* Base container */
+.anchor-demo-placement {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+/* Common button styles */
+.anchor-demo-placement-toggle,
+.anchor-demo-placement-button {
+  background-color: var(--bg-color);
+  border: 2px solid var(--border-color);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Toggle button */
+.anchor-demo-placement-toggle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+}
+
+.anchor-demo-placement-toggle:hover {
+  color: var(--hover-text);
+}
+
+.anchor-demo-placement-toggle.active,
+.anchor-demo-placement-button.active {
+  background-color: var(--active-color);
+  color: white;
+  border-color: var(--active-color);
+}
+
+/* Grid container */
+.anchor-demo-placement-grid {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--bg-color);
+  border: 2px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.anchor-demo-placement.collapsed .anchor-demo-placement-grid {
+  display: none;
+}
+
+/* Grid layout */
+.anchor-demo-placement-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Placement buttons */
+.anchor-demo-placement-button {
+  width: 5rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0 0.5rem;
+}
+
+.anchor-demo-placement-button:hover {
+  background-color: #f9fafb;
+  border-color: #d4d4d8;
+  color: var(--hover-text);
+}
+
+/* Spacer for grid layout */
+.anchor-demo-placement-spacer {
+  width: 5rem;
+  height: 2rem;
+}

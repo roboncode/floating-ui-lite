@@ -157,6 +157,6 @@
 }
 
 /* Dropdown specific styles */
-#element-resize-container.expanded .dropdown-menu {
+#element-resize-container.expanded .dropdown-float {
   min-width: 300px !important;
 }
