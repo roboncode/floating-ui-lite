@@ -70,7 +70,11 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
 
       // If current placement has enough space and element is visible, keep it
       const currentSpace = getAvailableSpace(state, state.placement);
-      if (currentSpace >= padding && state.visibilityState?.isWithinViewport) {
+      if (
+        currentSpace >= padding &&
+        state.visibilityState?.isReferenceInView &&
+        state.visibilityState?.isFloatingInView
+      ) {
         return {};
       }
 

@@ -1,5 +1,5 @@
 {
-  "name": "dropdown-menu",
+  "name": "uef-anchor",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -18,9 +18,5 @@
     "prettier": "^3.2.5",
     "typescript": "~5.7.2",
     "vite": "^6.1.0"
-  },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.0.9",
-    "tailwindcss": "^4.0.9"
   }
 }

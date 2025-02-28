@@ -1,25 +1,25 @@
 import { FloatingOptions, Placement, computePosition } from "../index";
 
-import { VisibilityState } from "../types";
-import { autoUpdate } from "../utils/autoUpdate";
 import { flip } from "../middleware/flip";
 import { hide } from "../middleware/hide";
 import { offset } from "../middleware/offset";
 import { placement } from "../middleware/placement";
 import { shift } from "../middleware/shift";
+import { VisibilityState } from "../types";
+import { autoUpdate } from "../utils/autoUpdate";
 
 // Create middleware array outside class
 const createMiddleware = () => [
   placement(),
-  offset(24),
+  offset(8),
   shift({ padding: 8, mainAxis: true, crossAxis: false }),
   flip(),
   hide({ strategy: "referenceHidden" }),
 ];
 
-export class DropdownMenu {
+export class Float {
   private trigger: HTMLElement;
-  private menu: HTMLElement;
+  private float: HTMLElement;
   private placement: Placement;
   private container: HTMLElement;
   private cleanup: (() => void) | null = null;
@@ -32,32 +32,32 @@ export class DropdownMenu {
 
   constructor(
     trigger: HTMLElement,
-    menuItems: string[],
     placement: Placement = "bottom-start",
     options: FloatingOptions = {},
     additionalClasses: string[] = [],
   ) {
     this.trigger = trigger;
+    // console.log(
+    //   "Initializing Float with placement:",
+    //   placement,
+    //   typeof placement
+    // );
     this.placement = placement;
     this.container = options.container || document.body;
     this.middleware = createMiddleware();
 
-    // Create menu element
-    this.menu = document.createElement("div");
-    this.menu.className = "dropdown-menu";
+    // Create float element
+    this.float = document.createElement("div");
+    this.float.className = "dropdown-float";
 
     // Add any additional classes
     if (additionalClasses.length > 0) {
-      this.menu.classList.add(...additionalClasses);
+      this.float.classList.add(...additionalClasses);
     }
 
-    // Create menu items
-    menuItems.forEach((item) => {
-      const menuItem = document.createElement("div");
-      menuItem.className = "dropdown-menu-item";
-      menuItem.textContent = item;
-      this.menu.appendChild(menuItem);
-    });
+    // Add a minimal content div to ensure proper positioning
+    const content = document.createElement("div");
+    this.float.appendChild(content);
 
     // Setup click handler
     this.clickHandler = () => {
@@ -81,12 +81,18 @@ export class DropdownMenu {
    * Separates DOM state (open/close) from visibility state (show/hide)
    */
   private updatePosition = async (visibilityState?: VisibilityState) => {
-    // Only proceed with updates if menu is open
+    // Only proceed with updates if float is open
     if (!this.isOpen) return;
+
+    console.log(
+      "Updating position with placement:",
+      this.placement,
+      typeof this.placement,
+    );
 
     const { x, y, middlewareData } = await computePosition(
       this.trigger,
-      this.menu,
+      this.float,
       {
         placement: this.placement,
         strategy: "absolute",
@@ -109,17 +115,17 @@ export class DropdownMenu {
     if (shouldBeVisible !== this.isVisible) {
       this.isVisible = shouldBeVisible;
       if (shouldBeVisible) {
-        console.log("🔍 Reference visible, showing menu");
+        console.log("🔍 Reference visible, showing float");
         this.show();
       } else {
-        console.log("🚫 Reference hidden, hiding menu");
+        console.log("🚫 Reference hidden, hiding float");
         this.hide();
       }
     }
 
-    // Update position if menu is in DOM
-    if (this.menu.parentNode) {
-      Object.assign(this.menu.style, {
+    // Update position if float is in DOM
+    if (this.float.parentNode) {
+      Object.assign(this.float.style, {
         left: `${x}px`,
         top: `${y}px`,
       });
@@ -127,15 +133,15 @@ export class DropdownMenu {
   };
 
   /**
-   * Opens the menu by adding it to the DOM
+   * Opens the float by adding it to the DOM
    * Initial visibility state is determined by current isVisible flag
    */
   open() {
     if (this.isOpen) return;
 
-    console.log("📂 Opening menu");
+    console.log("📂 Opening float");
     this.isOpen = true;
-    this.container.appendChild(this.menu);
+    this.container.appendChild(this.float);
 
     // Set initial visibility based on current state
     if (this.isVisible) {
@@ -146,22 +152,27 @@ export class DropdownMenu {
 
     // Update position and start updates
     this.updatePosition();
-    this.cleanup = autoUpdate(this.trigger, this.menu, this.updatePosition, {});
+    this.cleanup = autoUpdate(
+      this.trigger,
+      this.float,
+      this.updatePosition,
+      {},
+    );
   }
 
   /**
-   * Closes the menu by removing it from the DOM
+   * Closes the float by removing it from the DOM
    * Preserves the current visibility state for next open
    */
   close() {
     if (!this.isOpen) return;
 
-    console.log("📕 Closing menu");
+    console.log("📕 Closing float");
     this.isOpen = false;
 
     // Remove from DOM
-    if (this.menu.parentNode) {
-      this.menu.parentNode.removeChild(this.menu);
+    if (this.float.parentNode) {
+      this.float.parentNode.removeChild(this.float);
     }
 
     // Stop position updates
@@ -172,23 +183,23 @@ export class DropdownMenu {
   }
 
   /**
-   * Shows the menu by adding the show class
+   * Shows the float by adding the show class
    * Only affects visibility, not DOM presence
    */
   show() {
-    console.log("👁️ Showing menu");
-    this.menu.style.visibility = "visible";
-    this.menu.style.pointerEvents = "auto";
+    console.log("👁️ Showing float");
+    this.float.style.visibility = "visible";
+    this.float.style.pointerEvents = "auto";
   }
 
   /**
-   * Hides the menu by removing the show class
+   * Hides the float by removing the show class
    * Only affects visibility, not DOM presence
    */
   hide() {
-    console.log("🙈 Hiding menu");
-    this.menu.style.visibility = "hidden";
-    this.menu.style.pointerEvents = "none";
+    console.log("🙈 Hiding float");
+    this.float.style.visibility = "hidden";
+    this.float.style.pointerEvents = "none";
   }
 
   destroy() {

@@ -1,6 +1,6 @@
-import { VisibilityState } from "../types";
 import { isElementVisible } from "../core/isElementVisible";
-import { isInViewport } from "../core/isInViewport";
+import { isInView } from "../core/isInView";
+import { VisibilityState } from "../types";
 
 /**
  * Computes the visibility state for reference and floating elements
@@ -13,8 +13,9 @@ export const computeVisibilityState = (
   floating: HTMLElement,
 ): VisibilityState => {
   return {
-    isReferenceVisible: isElementVisible(reference),
+    isReferenceVisible: isElementVisible(reference) && isInView(reference),
     isFloatingVisible: isElementVisible(floating),
-    isWithinViewport: isInViewport(reference) || isInViewport(floating),
+    isReferenceInView: isInView(reference),
+    isFloatingInView: isInView(floating),
   };
 };

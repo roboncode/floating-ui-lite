@@ -1,13 +1,11 @@
-import { DropdownMenu } from "./DropdownMenu";
 import { Placement } from "../index";
-import { Tooltip } from "./Tooltip";
+import { Float } from "./float";
 
 interface Instances {
-  tooltips: Tooltip[];
-  dropdowns: DropdownMenu[];
+  dropdowns: Float[];
 }
 
-export class PlacementDemo {
+export class PlacementControl {
   private container: HTMLElement;
   private currentButton: HTMLElement | null = null;
   private instances: Instances;
@@ -19,11 +17,11 @@ export class PlacementDemo {
 
     // Create container for the grid
     this.container = document.createElement("div");
-    this.container.className = "placement-demo collapsed";
+    this.container.className = "anchor-demo-placement collapsed";
 
     // Create toggle button with hamburger icon
     this.toggleButton = document.createElement("button");
-    this.toggleButton.className = "placement-toggle-button";
+    this.toggleButton.className = "anchor-demo-placement-toggle";
     this.toggleButton.innerHTML = `
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path d="M3 4.5H15M3 9H15M3 13.5H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -33,7 +31,7 @@ export class PlacementDemo {
 
     // Create grid container
     const gridContainer = document.createElement("div");
-    gridContainer.className = "grid-container";
+    gridContainer.className = "anchor-demo-placement-grid";
 
     // Create grid buttons
     const placements: (Placement | null)[][] = [
@@ -46,16 +44,16 @@ export class PlacementDemo {
 
     placements.forEach((row) => {
       const rowDiv = document.createElement("div");
-      rowDiv.className = "placement-row";
+      rowDiv.className = "anchor-demo-placement-row";
 
       row.forEach((placement) => {
         if (placement === null) {
           const spacer = document.createElement("div");
-          spacer.className = "placement-button-spacer";
+          spacer.className = "anchor-demo-placement-spacer";
           rowDiv.appendChild(spacer);
         } else {
           const button = document.createElement("button");
-          button.className = "placement-button";
+          button.className = "anchor-demo-placement-button";
           button.textContent = placement.split("-").join(" ");
           button.addEventListener("click", () => {
             this.updatePlacement(placement, button);
@@ -113,9 +111,6 @@ export class PlacementDemo {
     button.classList.add("active");
     this.currentButton = button;
 
-    this.instances.tooltips.forEach((tooltip) =>
-      tooltip.updatePlacement(placement),
-    );
     this.instances.dropdowns.forEach((dropdown) =>
       dropdown.updatePlacement(placement),
     );
@@ -123,7 +118,6 @@ export class PlacementDemo {
 
   destroy() {
     document.removeEventListener("click", this.handleClickOutside);
-    this.instances.tooltips.forEach((tooltip) => tooltip.destroy());
     this.instances.dropdowns.forEach((dropdown) => dropdown.destroy());
     this.container.remove();
   }

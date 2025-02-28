@@ -1,0 +1,162 @@
+/* Base styles */
+.anchor-demo {
+  font-family: "Open Sans", sans-serif;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+  background-color: #ffffff;
+  color: #181b1b;
+}
+
+/* Container styles */
+.anchor-demo-container {
+  border: 2px solid #e4e4e7;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.anchor-demo-container:hover {
+  border-color: #d4d4d8;
+}
+
+.anchor-demo-container.scrollable {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.anchor-demo-container.resizable {
+  resize: both;
+  overflow: auto;
+  min-width: 200px;
+  min-height: 100px;
+  transition: background-color 0.2s;
+}
+
+.anchor-demo-container.resizable::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #0ea9e9 50%);
+  border-bottom-right-radius: 0.25rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.anchor-demo-container.resizable:hover {
+  background-color: #ffffff;
+}
+
+/* Container wrapper styles */
+.anchor-demo-wrapper {
+  position: relative;
+  padding-top: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+/* Label styles */
+.anchor-demo-label {
+  position: absolute;
+  border: 1px solid #e4e4e7;
+  padding: 0.5rem 1rem;
+  color: #52525b;
+  font-size: 0.75rem;
+  z-index: 10;
+  background-color: #f4f4f5;
+}
+
+/* Layout components */
+.anchor-demo-section {
+  margin-bottom: 2.5rem;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.anchor-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+}
+
+.anchor-demo-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+/* Interactive elements */
+.anchor-demo-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  color: #0c4a6e;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.anchor-demo-button:hover {
+  background-color: #bae6fd;
+}
+
+.anchor-demo-button.expanded {
+  padding: 1.25rem 3rem;
+  font-size: 1rem;
+}
+
+/* Utility components */
+.anchor-demo-spacer {
+  height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71717a;
+  font-size: 1.125rem;
+  background-color: #f4f4f5;
+}
+
+/* Shift components */
+.anchor-demo-shift-element {
+  transition: all 0.3s;
+}
+
+.anchor-demo-shift-element.expanded {
+  width: 140px !important;
+}
+
+.anchor-demo-shift-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s;
+  border-radius: 0.5rem;
+  margin: 0;
+}
+
+.anchor-demo-shift-content.expanded {
+  max-height: 200px;
+  opacity: 1;
+  margin: 1.25rem 0;
+  padding: 1.25rem;
+}
+
+/* Dropdown specific styles */
+#element-resize-container.expanded .dropdown-float {
+  min-width: 300px !important;
+}
