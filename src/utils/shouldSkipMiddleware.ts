@@ -12,7 +12,7 @@ import { ComputePositionState } from "../types";
  */
 export function shouldSkipMiddleware(
   state: ComputePositionState,
-  ignoreVisibility = false,
+  ignoreVisibility = false
 ): boolean {
   if (ignoreVisibility) {
     return false;
@@ -22,6 +22,7 @@ export function shouldSkipMiddleware(
     state.visibilityState &&
     (!state.visibilityState.isReferenceVisible ||
       !state.visibilityState.isFloatingVisible ||
-      !state.visibilityState.isWithinViewport)
+      !state.visibilityState.isReferenceInView ||
+      !state.visibilityState.isFloatingInView)
   );
 }

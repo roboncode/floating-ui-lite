@@ -37,11 +37,11 @@ export class Menu {
     additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
-    console.log(
-      "Initializing Menu with placement:",
-      placement,
-      typeof placement
-    );
+    // console.log(
+    //   "Initializing Menu with placement:",
+    //   placement,
+    //   typeof placement
+    // );
     this.placement = placement;
     this.container = options.container || document.body;
     this.middleware = createMiddleware();

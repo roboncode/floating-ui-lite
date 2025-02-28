@@ -17,7 +17,8 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   visibilityState: {
     isReferenceVisible: false,
     isFloatingVisible: false,
-    isWithinViewport: false,
+    isReferenceInView: false,
+    isFloatingInView: false,
   },
 };
 
@@ -28,7 +29,7 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
 export async function computePosition(
   reference: HTMLElement,
   floating: HTMLElement,
-  options: ComputePositionOptions = {},
+  options: ComputePositionOptions = {}
 ): Promise<ComputePositionState> {
   const {
     placement = defaultOptions.placement,
@@ -58,14 +59,14 @@ export async function computePosition(
       x: offset.x + (parent.scrollLeft || 0),
       y: offset.y + (parent.scrollTop || 0),
     }),
-    { x: 0, y: 0 },
+    { x: 0, y: 0 }
   );
 
   // Calculate initial position based on placement
   const { x, y } = computeInitialPosition(
     referenceRect,
     floatingRect,
-    placement,
+    placement
   );
 
   let state: ComputePositionState = {
@@ -118,7 +119,7 @@ export async function computePosition(
 export function computeInitialPosition(
   reference: Rect,
   floating: Rect,
-  placement: Placement,
+  placement: Placement
 ): { x: number; y: number } {
   const [mainAxis, crossAxis = "center"] = placement.split("-");
 

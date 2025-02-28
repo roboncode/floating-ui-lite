@@ -102,7 +102,8 @@ export interface ComputePositionState {
 export interface VisibilityState {
   isReferenceVisible: boolean;
   isFloatingVisible: boolean;
-  isWithinViewport: boolean;
+  isReferenceInView: boolean;
+  isFloatingInView: boolean;
 }
 
 /**

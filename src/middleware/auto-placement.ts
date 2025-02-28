@@ -13,12 +13,12 @@ interface AutoPlacementOptions {
  */
 function getAvailableSpace(
   state: ComputePositionState,
-  placement: Placement,
+  placement: Placement
 ): number {
   const position = computeInitialPosition(
     state.rects.reference,
     state.rects.floating,
-    placement,
+    placement
   );
   const testState = { ...state, ...position };
 
@@ -70,7 +70,11 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
 
       // If current placement has enough space and element is visible, keep it
       const currentSpace = getAvailableSpace(state, state.placement);
-      if (currentSpace >= padding && state.visibilityState?.isWithinViewport) {
+      if (
+        currentSpace >= padding &&
+        state.visibilityState?.isReferenceInView &&
+        state.visibilityState?.isFloatingInView
+      ) {
         return {};
       }
 
@@ -90,7 +94,7 @@ export function autoPlacement(options: AutoPlacementOptions = {}): Middleware {
         const newPosition = computeInitialPosition(
           state.rects.reference,
           state.rects.floating,
-          bestPlacement,
+          bestPlacement
         );
         return {
           ...newPosition,

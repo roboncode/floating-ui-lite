@@ -19,7 +19,8 @@ export function arrow(options: ArrowOptions): Middleware {
         state.visibilityState &&
         (!state.visibilityState.isReferenceVisible ||
           !state.visibilityState.isFloatingVisible ||
-          !state.visibilityState.isWithinViewport)
+          !state.visibilityState.isReferenceInView ||
+          !state.visibilityState.isFloatingInView)
       ) {
         return {};
       }
@@ -63,14 +64,11 @@ export function arrow(options: ArrowOptions): Middleware {
       // Ensure arrow stays within floating element bounds
       arrowX = Math.max(
         x + padding,
-        Math.min(arrowX, x + rects.floating.width - arrowRect.width - padding),
+        Math.min(arrowX, x + rects.floating.width - arrowRect.width - padding)
       );
       arrowY = Math.max(
         y + padding,
-        Math.min(
-          arrowY,
-          y + rects.floating.height - arrowRect.height - padding,
-        ),
+        Math.min(arrowY, y + rects.floating.height - arrowRect.height - padding)
       );
 
       return {
