@@ -11,7 +11,7 @@ import { autoUpdate } from "../utils/autoUpdate";
 // Create middleware array outside class
 const createMiddleware = () => [
   placement(),
-  offset(24),
+  offset(8),
   shift({ padding: 8, mainAxis: true, crossAxis: false }),
   flip(),
   hide({ strategy: "referenceHidden" }),
@@ -32,12 +32,16 @@ export class Menu {
 
   constructor(
     trigger: HTMLElement,
-    menuItems: string[],
     placement: Placement = "bottom-start",
     options: FloatingOptions = {},
     additionalClasses: string[] = []
   ) {
     this.trigger = trigger;
+    console.log(
+      "Initializing Menu with placement:",
+      placement,
+      typeof placement
+    );
     this.placement = placement;
     this.container = options.container || document.body;
     this.middleware = createMiddleware();
@@ -51,13 +55,9 @@ export class Menu {
       this.menu.classList.add(...additionalClasses);
     }
 
-    // Create menu items
-    menuItems.forEach((item) => {
-      const menuItem = document.createElement("div");
-      menuItem.className = "dropdown-menu-item";
-      menuItem.textContent = item;
-      this.menu.appendChild(menuItem);
-    });
+    // Add a minimal content div to ensure proper positioning
+    const content = document.createElement("div");
+    this.menu.appendChild(content);
 
     // Setup click handler
     this.clickHandler = () => {
@@ -83,6 +83,12 @@ export class Menu {
   private updatePosition = async (visibilityState?: VisibilityState) => {
     // Only proceed with updates if menu is open
     if (!this.isOpen) return;
+
+    console.log(
+      "Updating position with placement:",
+      this.placement,
+      typeof this.placement
+    );
 
     const { x, y, middlewareData } = await computePosition(
       this.trigger,

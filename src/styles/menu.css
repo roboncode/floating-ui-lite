@@ -1,7 +1,6 @@
 .dropdown-menu {
-  @apply absolute bg-sky-500 rounded-lg min-w-[180px] invisible z-[1000] p-1.5
-    origin-top scale-95
-    shadow-[0_2px_12px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1)];
+  @apply absolute bg-sky-50 rounded-lg min-w-[150px] min-h-[120px] invisible z-[1000] p-1.5
+    origin-top scale-95 border border-sky-600 shadow-md shadow-zinc-200/50;
 }
 
 .dropdown-menu.wide {
@@ -13,5 +12,5 @@
 }
 
 .dropdown-menu-item {
-  @apply p-2 cursor-pointer rounded-md text-sm text-white font-semibold antialiased leading-tight hover:bg-sky-600;
+  @apply p-2 cursor-pointer rounded-md text-sm text-black font-semibold antialiased leading-tight hover:bg-gray-200;
 }

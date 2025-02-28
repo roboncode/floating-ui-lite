@@ -21,11 +21,7 @@ instances.tooltips.push(
 );
 
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-default")!,
-    ["Profile", "Settings", "Help", "Sign Out"],
-    "bottom-start"
-  )
+  new Menu(document.getElementById("dropdown-default")!, "bottom-start")
 );
 
 // Container 1: Simple container
@@ -40,12 +36,9 @@ instances.tooltips.push(
 );
 
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-container1")!,
-    ["Item 1", "Item 2", "Item 3"],
-    "bottom-start",
-    { container: container1 }
-  )
+  new Menu(document.getElementById("dropdown-container1")!, "bottom-start", {
+    container: container1,
+  })
 );
 
 // Container 2: Scrollable container
@@ -60,12 +53,9 @@ instances.tooltips.push(
 );
 
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-container2")!,
-    ["Scroll Item 1", "Scroll Item 2", "Scroll Item 3"],
-    "bottom-start",
-    { container: container2 }
-  )
+  new Menu(document.getElementById("dropdown-container2")!, "bottom-start", {
+    container: container2,
+  })
 );
 
 // Container 3: Nested scrollable containers
@@ -82,12 +72,9 @@ instances.tooltips.push(
 );
 
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-container3")!,
-    ["Nested Item 1", "Nested Item 2", "Nested Item 3"],
-    "bottom-start",
-    { container: container3Inner }
-  )
+  new Menu(document.getElementById("dropdown-container3")!, "bottom-start", {
+    container: container3Inner,
+  })
 );
 
 // Elements that float to document.body from nested container
@@ -102,7 +89,6 @@ instances.tooltips.push(
 instances.dropdowns.push(
   new Menu(
     document.getElementById("dropdown-container3-floating")!,
-    ["Float Item 1", "Float Item 2", "Float Item 3"],
     "bottom-start"
   )
 );
@@ -131,21 +117,14 @@ instances.tooltips.push(
 
 // Dropdown in container, floating element in body
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-mixed1")!,
-    ["Item 1", "Item 2", "Item 3"],
-    "bottom-start"
-  )
+  new Menu(document.getElementById("dropdown-mixed1")!, "bottom-start")
 );
 
 // Dropdown in body, floating element in container
 instances.dropdowns.push(
-  new Menu(
-    document.getElementById("dropdown-mixed2")!,
-    ["Item A", "Item B", "Item C"],
-    "bottom-start",
-    { container: container4 }
-  )
+  new Menu(document.getElementById("dropdown-mixed2")!, "bottom-start", {
+    container: container4,
+  })
 );
 
 // Initialize placement demo with all instances
@@ -157,7 +136,6 @@ const resizeDropdown1 = document.getElementById("dropdown-resize1")!;
 instances.dropdowns.push(
   new Menu(
     resizeDropdown1,
-    ["Item 1", "Item 2", "Item 3"],
     "bottom-start",
     {
       container: resizeContainer,
@@ -176,7 +154,6 @@ const resizeDropdown2 = document.getElementById("dropdown-resize2")!;
 instances.dropdowns.push(
   new Menu(
     resizeDropdown2,
-    ["Resize Item 1", "Resize Item 2", "Resize Item 3"],
     "bottom-start",
     {
       // RAF approach - continuous updates
