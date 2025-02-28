@@ -2,13 +2,13 @@ import {
   ComputePositionOptions,
   ComputePositionState,
   Placement,
-  Rect,
 } from "../types";
 
 import { getBoundingClientRect } from "./getBoundingClientRect";
 import { getScrollParents } from "./getScrollParents";
 import { getViewportRect } from "./getViewportRect";
 import { getWindowScroll } from "./getWindowScroll";
+import { RectCacheManager } from "./rectCache";
 
 const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
   placement: "bottom",
@@ -29,8 +29,11 @@ const defaultOptions: Required<Omit<ComputePositionOptions, "middleware">> = {
 export async function computePosition(
   reference: HTMLElement,
   floating: HTMLElement,
-  options: ComputePositionOptions = {},
+  options: ComputePositionOptions = {}
 ): Promise<ComputePositionState> {
+  // Clear any existing cached rects
+  RectCacheManager.clear();
+
   const {
     placement = defaultOptions.placement,
     strategy = defaultOptions.strategy,
@@ -59,17 +62,17 @@ export async function computePosition(
       x: offset.x + (parent.scrollLeft || 0),
       y: offset.y + (parent.scrollTop || 0),
     }),
-    { x: 0, y: 0 },
+    { x: 0, y: 0 }
   );
 
   // Calculate initial position based on placement
   const { x, y } = computeInitialPosition(
     referenceRect,
     floatingRect,
-    placement,
+    placement
   );
 
-  let state: ComputePositionState = {
+  const initialState: ComputePositionState = {
     x,
     y,
     strategy,
@@ -88,28 +91,27 @@ export async function computePosition(
   };
 
   // Run middleware
-  for (const { fn } of middleware) {
-    const response = await fn(state);
-    if (response) {
-      state = {
-        ...state,
-        ...response,
-      };
-    }
-  }
+  const finalState = await middleware.reduce(async (promise, { fn }) => {
+    const currentState = await promise;
+    const response = await fn(currentState);
+    return response ? { ...currentState, ...response } : currentState;
+  }, Promise.resolve(initialState));
 
   // Adjust position based on strategy and container context
   if (strategy === "absolute") {
     const isBodyContainer = container === document.body;
-    state.x += isBodyContainer
+    finalState.x += isBodyContainer
       ? windowScroll.x
       : -containerRect.x + scrollOffset.x;
-    state.y += isBodyContainer
+    finalState.y += isBodyContainer
       ? windowScroll.y
       : -containerRect.y + scrollOffset.y;
   }
 
-  return state;
+  // Clear cache after computation
+  RectCacheManager.clear();
+
+  return finalState;
 }
 
 /**
@@ -117,9 +119,9 @@ export async function computePosition(
  * This position will be adjusted later for scroll and container context.
  */
 export function computeInitialPosition(
-  reference: Rect,
-  floating: Rect,
-  placement: Placement,
+  reference: DOMRect,
+  floating: DOMRect,
+  placement: Placement
 ): { x: number; y: number } {
   const [mainAxis, crossAxis = "center"] = placement.split("-");
 

@@ -15,16 +15,6 @@ export type Dimensions = {
 };
 
 /**
- * Represents the boundaries of an element
- */
-export type Rect = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
-/**
  * Virtual element interface for non-DOM elements
  */
 export interface VirtualElement {
@@ -89,8 +79,8 @@ export interface ComputePositionState {
   placement: Placement;
   strategy: Strategy;
   rects: {
-    reference: Rect;
-    floating: Rect;
+    reference: DOMRect;
+    floating: DOMRect;
   };
   elements: Elements;
   middlewareData: Record<string, any>;
