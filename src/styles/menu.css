@@ -1,16 +1,41 @@
 .dropdown-menu {
-  @apply absolute bg-sky-50 rounded-lg min-w-[150px] min-h-[120px] invisible z-[1000] p-1.5
-    origin-top scale-95 border border-sky-600 shadow-md shadow-zinc-200/50;
+  position: absolute;
+  background-color: white;
+  border-radius: 0.5rem;
+  min-width: 220px;
+  min-height: 120px;
+  visibility: hidden;
+  z-index: 1000;
+  padding: 0.375rem;
+  transform-origin: top;
+  transform: scale(0.95);
+  border: 1px solid rgb(228, 228, 231);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.08),
+    0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-menu.wide {
-  @apply min-w-[280px];
+  min-width: 280px;
 }
 
 .dropdown-menu.show {
-  @apply scale-100 block visible;
+  transform: scale(1);
+  display: block;
+  visibility: visible;
 }
 
 .dropdown-menu-item {
-  @apply p-2 cursor-pointer rounded-md text-sm text-black font-semibold antialiased leading-tight hover:bg-gray-200;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(24, 24, 27);
+  font-weight: 600;
+  line-height: 1.25;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu-item:hover {
+  background-color: rgb(244, 244, 245);
 }

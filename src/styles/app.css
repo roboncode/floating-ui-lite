@@ -1,131 +1,185 @@
-@import "tailwindcss";
-@import "./tooltip.css";
-@import "./placement.css";
-@import "./menu.css";
-
+/* Base styles */
 body {
-  @apply max-w-7xl mx-auto p-5 leading-relaxed bg-white text-zinc-900;
+  font-family: "Open Sans", sans-serif;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+  background-color: #ffffff;
+  color: #181b1b;
 }
 
-.container {
-  @apply border-2 border-zinc-200 rounded-lg p-5 my-5 relative bg-white;
+/* Container styles */
+.container,
+.scroll-container,
+.nested-container {
+  border: 2px solid #e4e4e7;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+  position: relative;
 }
 
 .scroll-container {
-  @apply max-h-[350px] overflow-y-auto border-2 border-zinc-200 rounded-lg p-5 my-7 relative bg-white;
+  max-height: 350px;
+  overflow-y: auto;
 }
 
-/* Create a wrapper for scroll containers to handle the label properly */
+/* Scroll container wrapper and label styles */
 .scroll-container-wrapper {
-  @apply relative pt-3 my-5;
-}
-
-.scroll-container-wrapper .container-label {
-  @apply top-0 font-medium bg-white border border-zinc-200 rounded shadow-sm shadow-zinc-100 z-10;
-}
-
-.nested-container {
-  @apply border-2 border-dashed border-zinc-200 rounded-lg p-5 my-7 relative bg-white;
+  position: relative;
+  padding-top: 0.75rem;
+  margin: 1.25rem 0;
 }
 
 .spacer {
-  @apply h-[200px] flex items-center justify-center text-zinc-500 text-lg bg-zinc-100;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71717a;
+  font-size: 1.125rem;
+  background-color: #f4f4f5;
 }
 
 .section {
-  @apply mb-10 bg-white p-5 rounded-lg shadow-lg shadow-zinc-100/10;
-}
-
-h1 {
-  @apply text-zinc-900 mb-8 text-center text-3xl font-light;
-}
-
-h2 {
-  @apply text-zinc-700 mb-5 text-xl font-light;
-}
-
-h3 {
-  @apply text-zinc-600 my-4 text-lg font-light;
+  margin-bottom: 2.5rem;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
 }
 
 .button {
-  @apply px-6 py-3 bg-white border-2 border-sky-600 text-sky-600 rounded-lg cursor-pointer text-sm font-medium transition-all shadow-sm shadow-zinc-100/10 hover:shadow-md hover:bg-sky-100 active:shadow-sm;
+  padding: 0.75rem 1.5rem;
+  background-color: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  color: #0c4a6e;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background-color: #bae6fd;
 }
 
 .button.expanded {
-  @apply px-12 py-5 text-base;
+  padding: 1.25rem 3rem;
+  font-size: 1rem;
 }
 
 .container-label {
-  @apply absolute border border-dashed border-zinc-200 bg-white p-2 px-4 text-zinc-600 text-xs z-10 shadow-[0_0_0_2px] shadow-white;
+  position: absolute;
+  border: 1px solid #e4e4e7;
+  padding: 0.5rem 1rem;
+  color: #52525b;
+  font-size: 0.75rem;
+  z-index: 10;
+  background-color: #f4f4f5;
 }
 
 .demo-grid {
-  @apply grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5 my-5;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin: 1.25rem 0;
 }
 
 .demo-item {
-  @apply flex flex-wrap items-center justify-center p-5 border border-zinc-200 rounded-lg text-center bg-white;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  text-align: center;
 }
 
-.resizable-container {
-  @apply resize overflow-auto min-w-[200px] min-h-[100px] bg-white transition-colors duration-200;
+.resizable-container,
+.resizable-element {
+  resize: both;
+  overflow: auto;
+  min-width: 200px;
+  min-height: 100px;
+  transition: background-color 0.2s;
 }
 
-.resizable-container:hover {
-  @apply bg-zinc-50;
+.resizable-container:hover,
+.resizable-element.expanded {
+  background-color: #ffffff;
 }
 
 .resizable-container::after {
-  @apply content-[''] absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-[linear-gradient(135deg,transparent_50%,#0ea5e9_50%)] rounded-br opacity-50 transition-opacity duration-200;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #0ea9e9 50%);
+  border-bottom-right-radius: 0.25rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
 .resizable-container:hover::after {
-  @apply opacity-100;
+  opacity: 1;
 }
 
 .resizable-element {
-  @apply p-2.5 border-2 border-dashed border-zinc-200 rounded-lg transition-all duration-300;
+  padding: 0.625rem;
+  border: 2px dashed #e4e4e7;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
 }
 
 .resizable-element.expanded {
-  @apply p-7 w-[200px] bg-zinc-50;
+  padding: 1.75rem;
+  width: 200px;
 }
 
 .layout-shift-grid {
-  @apply relative;
+  position: relative;
 }
 
 .shift-spacer {
-  @apply h-0 transition-all duration-300 overflow-hidden;
+  height: 0;
+  transition: all 0.3s;
+  overflow: hidden;
 }
 
 .shift-spacer.expanded {
-  @apply h-[100px] my-5 bg-zinc-50;
+  height: 100px;
+  margin: 1.25rem 0;
 }
 
-/* Add some content that will push our button down */
 .shift-content {
-  @apply max-h-0 opacity-0 overflow-hidden transition-all duration-300 bg-zinc-50 rounded-lg m-0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s;
+  border-radius: 0.5rem;
+  margin: 0;
 }
 
 .shift-content.expanded {
-  @apply max-h-[200px] opacity-100 my-5 p-5;
+  max-height: 200px;
+  opacity: 1;
+  margin: 1.25rem 0;
+  padding: 1.25rem;
 }
 
 .container:hover {
-  @apply border-zinc-300;
+  border-color: #d4d4d8;
 }
 
-/* Style for expanded dropdown menu */
 #element-resize-container.expanded .dropdown-menu {
-  @apply !min-w-[300px];
-}
-
-#element-resize-container.expanded .dropdown-menu-item {
-  @apply !p-3 !text-base;
+  min-width: 300px !important;
 }
 
 .shift-element.expanded {
-  @apply !w-[140px];
+  width: 140px !important;
 }
